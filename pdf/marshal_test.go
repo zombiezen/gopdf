@@ -12,6 +12,7 @@ type marshalTest struct {
 }
 
 var marshalTests = []marshalTest{
+	{nil, "null"},
 	{"", "()"},
 	{"This is a string", "(This is a string)"},
 	{"Strings may contain newlines\nand such.", "(Strings may contain newlines\nand such.)"},

@@ -25,7 +25,13 @@ func Marshal(v interface{}) ([]byte, os.Error) {
 	return marshalValue(reflect.ValueOf(v))
 }
 
+const nullKeyword = "null"
+
 func marshalValue(v reflect.Value) ([]byte, os.Error) {
+	if !v.IsValid() {
+		return []byte(nullKeyword), nil
+	}
+
 	if m, ok := v.Interface().(Marshaler); ok {
 		return m.MarshalPDF()
 	}
