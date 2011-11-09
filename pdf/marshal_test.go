@@ -26,6 +26,8 @@ var marshalTests = []marshalTest{
 	{[]string{"foo", "(parens)"}, `[ (foo) (\(parens\)) ]`},
 	{map[name]string{}, `<< >>`},
 	{map[name]string{name("foo"): "bar"}, `<< /foo (bar) >>`},
+	{indirectObject{42, 0, "foo"}, `42 0 obj (foo) endobj`},
+	{indirectReference{42, 0}, `42 0 R`},
 }
 
 func TestMarshal(t *testing.T) {

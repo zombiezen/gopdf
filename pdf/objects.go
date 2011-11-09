@@ -4,7 +4,6 @@ package pdf
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"strconv"
 )
@@ -54,16 +53,12 @@ type indirectObject struct {
 }
 
 const (
-	objectBegin = "obj "
+	objectBegin = " obj "
 	objectEnd   = " endobj"
 )
 
 func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
-	m, ok := obj.Object.(Marshaler)
-	if !ok {
-		return nil, fmt.Errorf("indirect object %d %d does not implement Marshaler", obj.Number, obj.Generation)
-	}
-	data, err := m.MarshalPDF()
+	data, err := Marshal(obj.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -76,5 +71,23 @@ func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
 	result = append(result, objectBegin...)
 	result = append(result, data...)
 	result = append(result, objectEnd...)
+	return result, nil
+}
+
+type indirectReference struct {
+	Number     uint
+	Generation uint
+}
+
+const referenceKeyword = "R"
+
+func (ref indirectReference) MarshalPDF() ([]byte, os.Error) {
+	mn, mg := strconv.Uitoa(ref.Number), strconv.Uitoa(ref.Generation)
+	result := make([]byte, 0, len(mn)+1+len(mg)+1+len(referenceKeyword))
+	result = append(result, mn...)
+	result = append(result, ' ')
+	result = append(result, mg...)
+	result = append(result, ' ')
+	result = append(result, referenceKeyword...)
 	return result, nil
 }
