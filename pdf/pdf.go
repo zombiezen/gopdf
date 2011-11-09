@@ -31,7 +31,3 @@ func New(w io.WriteCloser) (*Writer, os.Error) {
 	}
 	return ww, nil
 }
-
-type Marshaler interface {
-	MarshalPDF() ([]byte, os.Error)
-}
