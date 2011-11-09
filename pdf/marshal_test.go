@@ -20,6 +20,10 @@ var marshalTests = []marshalTest{
 	{float64(1e9), "1000000000.00000"},
 	{name(""), "/"},
 	{name("foo"), "/foo"},
+	{[]interface{}{}, `[ ]`},
+	{[]string{"foo", "(parens)"}, `[ (foo) (\(parens\)) ]`},
+	{map[name]string{}, `<< >>`},
+	{map[name]string{name("foo"): "bar"}, `<< /foo (bar) >>`},
 }
 
 func TestMarshal(t *testing.T) {
@@ -27,9 +31,9 @@ func TestMarshal(t *testing.T) {
 		result, err := Marshal(tt.Value)
 		switch {
 		case err != nil:
-			t.Errorf("%d. %#v.MarshalPDF() error: %v", i, tt.Value, err)
+			t.Errorf("%d. Marshal(%#v) error: %v", i, tt.Value, err)
 		case string(result) != tt.Expected:
-			t.Errorf("%d. %#v.MarshalPDF() != %q (got %q)", i, tt.Value, tt.Expected, result)
+			t.Errorf("%d. Marshal(%#v) != %q (got %q)", i, tt.Value, tt.Expected, result)
 		}
 	}
 }

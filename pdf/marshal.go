@@ -2,7 +2,6 @@ package pdf
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"reflect"
 	"strconv"
@@ -40,6 +39,10 @@ func marshalValue(v reflect.Value) ([]byte, os.Error) {
 		return []byte(quote(v.String())), nil
 	case reflect.Ptr:
 		return marshalValue(v.Elem())
+	case reflect.Array, reflect.Slice:
+		return marshalSlice(v)
+	case reflect.Map:
+		return marshalDictionary(v)
 	}
 
 	return nil, os.NewError("pdf: unsupported type: " + v.Type().String())
@@ -59,103 +62,48 @@ func quote(s string) string {
 	return "(" + r.Replace(s) + ")"
 }
 
-func (n name) MarshalPDF() ([]byte, os.Error) {
-	// TODO: escape characters
-	return []byte("/" + n), nil
-}
-
 var arrayMarshalChars = []byte{'[', ' ', ']'}
 
-func (a array) MarshalPDF() ([]byte, os.Error) {
-	marshalled := make([][]byte, len(a)+2)
-	marshalled[0] = arrayMarshalChars[0:1]
-	marshalled[len(marshalled)-1] = arrayMarshalChars[2:3]
-
-	for i, obj := range a {
-		if m, ok := obj.(Marshaler); ok {
-			var err os.Error
-			marshalled[i], err = m.MarshalPDF()
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, fmt.Errorf("array element %d does not implement Marshaler", i)
+func marshalSlice(v reflect.Value) ([]byte, os.Error) {
+	marshalled := make([][]byte, 0, v.Len()+2)
+	marshalled = append(marshalled, arrayMarshalChars[0:1])
+	for i := 0; i < v.Len(); i++ {
+		m, err := marshalValue(v.Index(i))
+		if err != nil {
+			return nil, err
 		}
+		marshalled = append(marshalled, m)
 	}
+	marshalled = append(marshalled, arrayMarshalChars[2:3])
 	return bytes.Join(marshalled, arrayMarshalChars[1:2]), nil
 }
 
 var dictionaryMarshalChars = []byte{'<', '<', ' ', '>', '>'}
 
-func (d dictionary) MarshalPDF() ([]byte, os.Error) {
-	marshalled := make([][]byte, 0, len(d)*2+2)
+func marshalDictionary(v reflect.Value) ([]byte, os.Error) {
+	if v.Type().Key() != reflect.TypeOf(name("")) {
+		return nil, os.NewError("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
+	}
+
+	marshalled := make([][]byte, 0, v.Len()*2+2)
 	marshalled = append(marshalled, dictionaryMarshalChars[0:2])
 
-	for k, obj := range d {
+	for _, k := range v.MapKeys() {
 		// Marshal key
-		mk, err := k.MarshalPDF()
+		mk, err := k.Interface().(name).MarshalPDF()
 		if err != nil {
 			return nil, err
 		}
 
 		// Marshal value
-		if m, ok := obj.(Marshaler); ok {
-			mobj, err := m.MarshalPDF()
-			if err != nil {
-				return nil, err
-			}
-			marshalled = append(marshalled, mk, mobj)
-		} else {
-			return nil, fmt.Errorf("dictionary element %s does not implement Marshaler", k)
+		mobj, err := marshalValue(v.MapIndex(k))
+		if err != nil {
+			return nil, err
 		}
+
+		marshalled = append(marshalled, mk, mobj)
 	}
 
 	marshalled = append(marshalled, dictionaryMarshalChars[3:5])
 	return bytes.Join(marshalled, dictionaryMarshalChars[2:3]), nil
-}
-
-const (
-	streamBegin = "stream\r\n"
-	streamEnd   = "\r\nendstream"
-)
-
-func (s stream) MarshalPDF() ([]byte, os.Error) {
-	var b bytes.Buffer
-
-	// TODO: Force Length key
-	mdict, err := s.Dictionary.MarshalPDF()
-	if err != nil {
-		return nil, err
-	}
-	b.Write(mdict)
-	b.WriteString(streamBegin)
-	b.Write(s.Bytes)
-	b.WriteString(streamEnd)
-	return b.Bytes(), nil
-}
-
-const (
-	objectBegin = "obj "
-	objectEnd   = " endobj"
-)
-
-func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
-	m, ok := obj.Object.(Marshaler)
-	if !ok {
-		return nil, fmt.Errorf("indirect object %d %d does not implement Marshaler", obj.Number, obj.Generation)
-	}
-	data, err := m.MarshalPDF()
-	if err != nil {
-		return nil, err
-	}
-
-	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
-	result := make([]byte, 0, len(mn)+1+len(mg)+len(objectBegin)+len(data)+len(objectEnd))
-	result = append(result, mn...)
-	result = append(result, ' ')
-	result = append(result, mg...)
-	result = append(result, objectBegin...)
-	result = append(result, data...)
-	result = append(result, objectEnd...)
-	return result, nil
 }
