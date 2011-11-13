@@ -11,6 +11,13 @@ type marshalTest struct {
 	Expected string
 }
 
+type fooStruct struct {
+	Size    int64
+	Params  map[name]string
+	NotHere string  `pdf:"-"`
+	Rename  float64 `pdf:"Pi"`
+}
+
 var marshalTests = []marshalTest{
 	{nil, "null"},
 	{"", "()"},
@@ -29,6 +36,15 @@ var marshalTests = []marshalTest{
 	{map[name]string{name("foo"): "bar"}, `<< /foo (bar) >>`},
 	{indirectObject{42, 0, "foo"}, `42 0 obj (foo) endobj`},
 	{indirectReference{42, 0}, `42 0 R`},
+	{
+		fooStruct{
+			Size:    42,
+			Params:  map[name]string{name("this"): "that"},
+			NotHere: "XXX",
+			Rename:  3.141592,
+		},
+		`<< /Size 42 /Params << /this (that) >> /Pi 3.14159 >>`,
+	},
 }
 
 func TestMarshal(t *testing.T) {

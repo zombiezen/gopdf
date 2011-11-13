@@ -67,6 +67,8 @@ func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 		return state.marshalSlice(v)
 	case reflect.Map:
 		return state.marshalDictionary(v)
+	case reflect.Struct:
+		return state.marshalStruct(v)
 	}
 
 	return os.NewError("pdf: unsupported type: " + v.Type().String())
@@ -115,6 +117,46 @@ func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
 
 		// Marshal value
 		if err := state.marshalValue(v.MapIndex(k)); err != nil {
+			return err
+		}
+		state.WriteByte(' ')
+	}
+	state.WriteString(">>")
+	return nil
+}
+
+func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
+	state.WriteString("<< ")
+	t := v.Type()
+	n := v.NumField()
+	for i := 0; i < n; i++ {
+		f := t.Field(i)
+		if f.PkgPath != "" {
+			continue
+		}
+
+		tag := f.Name
+		if tv := f.Tag.Get("pdf"); tv != "" {
+			if tv == "-" {
+				continue
+			}
+
+			// XXX: options?
+			tag = tv
+		}
+
+		fieldValue := v.Field(i)
+
+		// Marshal key
+		mk, err := name(tag).MarshalPDF()
+		if err != nil {
+			return err
+		}
+		state.Write(mk)
+		state.WriteByte(' ')
+
+		// Marshal value
+		if err := state.marshalValue(fieldValue); err != nil {
 			return err
 		}
 		state.WriteByte(' ')
