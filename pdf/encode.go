@@ -11,7 +11,7 @@ import (
 // An Encoder writes the PDF file format.
 type Encoder struct {
 	objects []interface{}
-	root    Reference
+	Root    Reference
 }
 
 type trailer struct {
@@ -54,7 +54,7 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	objectOffsets := make([]int64, len(enc.objects))
 	for i, obj := range enc.objects {
 		objectOffsets[i] = w.offset
-		data, err := Marshal(indirectObject{uint(i + 1), 0, obj})
+		data, err := Marshal(indirectObject{Reference{uint(i + 1), 0}, obj})
 		if err != nil {
 			return err
 		}
@@ -89,7 +89,7 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	}
 	trailerDict := trailer{
 		Size: len(enc.objects) + 1,
-		Root: enc.root,
+		Root: enc.Root,
 	}
 	trailerData, err := Marshal(trailerDict)
 	if err != nil {

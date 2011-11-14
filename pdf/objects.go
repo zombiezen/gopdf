@@ -9,21 +9,21 @@ import (
 	"strconv"
 )
 
-// name is a PDF name object.
-type name string
+// Name is a PDF Name object.
+type Name string
 
-func (n name) String() string {
+func (n Name) String() string {
 	return string(n)
 }
 
-func (n name) MarshalPDF() ([]byte, os.Error) {
+func (n Name) MarshalPDF() ([]byte, os.Error) {
 	// TODO: escape characters
 	return []byte("/" + n), nil
 }
 
 // stream is a blob of data.
 type stream struct {
-	Dictionary map[name]interface{}
+	Dictionary map[Name]interface{}
 	Bytes      []byte
 }
 
@@ -48,9 +48,8 @@ func (s stream) MarshalPDF() ([]byte, os.Error) {
 }
 
 type indirectObject struct {
-	Number     uint
-	Generation uint
-	Object     interface{}
+	Reference
+	Object interface{}
 }
 
 const (
