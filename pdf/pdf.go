@@ -23,7 +23,7 @@ func New() *Document {
 	return doc
 }
 
-func (doc *Document) NewPage(width, height int) {
+func (doc *Document) NewPage(width, height int) *Canvas {
 	page := &pageDict{
 		Type:      pageType,
 		Resources: map[Name]interface{}{},
@@ -36,7 +36,12 @@ func (doc *Document) NewPage(width, height int) {
 	stream := newStream(streamNoFilter)
 	page.Contents = doc.Add(stream)
 
-	// TODO: return something useful
+	return &Canvas{
+		doc:      doc,
+		page:     page,
+		ref:      pageRef,
+		contents: stream,
+	}
 }
 
 func (doc *Document) Encode(w io.Writer) os.Error {
