@@ -33,7 +33,7 @@ func (doc *Document) NewPage(width, height int) *Canvas {
 	pageRef := doc.Add(page)
 	doc.pages = append(doc.pages, indirectObject{pageRef, page})
 
-	stream := newStream(streamNoFilter)
+	stream := newStream(streamLZWDecode)
 	page.Contents = doc.Add(stream)
 
 	return &Canvas{

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 )
 
 type Canvas struct {
@@ -14,6 +15,10 @@ type Canvas struct {
 	page     *pageDict
 	ref      Reference
 	contents *stream
+}
+
+func (canvas *Canvas) Close() os.Error {
+	return canvas.contents.Close()
 }
 
 // SetSize changes the page's media box.
