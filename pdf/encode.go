@@ -74,7 +74,7 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	if _, err := fmt.Fprintf(w, crossReferenceSubsectionFormat, 0, len(enc.objects)+1); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, crossReferenceFreeFormat, len(enc.objects)+1, 65535); err != nil {
+	if _, err := fmt.Fprintf(w, crossReferenceFreeFormat, 0, 65535); err != nil {
 		return err
 	}
 	for _, offset := range objectOffsets {

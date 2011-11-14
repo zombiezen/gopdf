@@ -14,7 +14,7 @@ const encodingTestData = "%PDF-1.7\r\n" +
 	"2 0 obj 42 endobj\r\n" +
 	"xref\r\n" +
 	"0 3\r\n" +
-	"0000000003 65535 f\r\n" +
+	"0000000000 65535 f\r\n" +
 	"0000000017 00000 n\r\n" +
 	"0000000049 00000 n\r\n" +
 	"trailer\r\n" +
