@@ -33,7 +33,7 @@ func (doc *Document) NewPage(width, height int) {
 	pageRef := doc.Add(page)
 	doc.pages = append(doc.pages, indirectObject{pageRef, page})
 
-	stream := new(stream)
+	stream := newStream(streamNoFilter)
 	page.Contents = doc.Add(stream)
 
 	// TODO: return something useful

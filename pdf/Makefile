@@ -6,5 +6,6 @@ GOFILES=\
 	marshal.go\
 	pdf.go\
 	objects.go\
+	stream.go\
 
 include $(GOROOT)/src/Make.pkg

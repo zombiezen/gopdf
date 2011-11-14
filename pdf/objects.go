@@ -3,7 +3,6 @@
 package pdf
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strconv"
@@ -19,32 +18,6 @@ func (n Name) String() string {
 func (n Name) MarshalPDF() ([]byte, os.Error) {
 	// TODO: escape characters
 	return []byte("/" + n), nil
-}
-
-// stream is a blob of data.
-type stream struct {
-	Dictionary map[Name]interface{}
-	Bytes      []byte
-}
-
-const (
-	streamBegin = "stream\r\n"
-	streamEnd   = "\r\nendstream"
-)
-
-func (s stream) MarshalPDF() ([]byte, os.Error) {
-	var b bytes.Buffer
-
-	// TODO: Force Length key
-	mdict, err := Marshal(s.Dictionary)
-	if err != nil {
-		return nil, err
-	}
-	b.Write(mdict)
-	b.WriteString(streamBegin)
-	b.Write(s.Bytes)
-	b.WriteString(streamEnd)
-	return b.Bytes(), nil
 }
 
 type indirectObject struct {
