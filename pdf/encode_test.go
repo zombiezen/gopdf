@@ -1,0 +1,42 @@
+// Copyright (C) 2011, Ross Light
+
+package pdf
+
+import (
+	"bytes"
+	"reflect"
+	"testing"
+)
+
+const encodingTestData = "%PDF-1.7\r\n" +
+	"%\x93\x8c\x8b\x9e\r\n" +
+	"1 0 obj (Hello, World!) endobj\r\n" +
+	"2 0 obj 42 endobj\r\n" +
+	"xref\r\n" +
+	"0 3\r\n" +
+	"0000000003 65535 f\r\n" +
+	"0000000017 00000 n\r\n" +
+	"0000000049 00000 n\r\n" +
+	"trailer\r\n" +
+	"<< /Size 3 /Root 0 0 R >>\r\n" +
+	"startxref\r\n" +
+	"68\r\n" +
+	"%%EOF\r\n"
+
+func TestEncoder(t *testing.T) {
+	var e Encoder
+	if ref := e.Add("Hello, World!"); !reflect.DeepEqual(ref, Reference{1, 0}) {
+		t.Errorf("After adding first object, reference is %#v", ref)
+	}
+	if ref := e.Add(42); !reflect.DeepEqual(ref, Reference{2, 0}) {
+		t.Errorf("After adding second object, reference is %#v", ref)
+	}
+
+	var b bytes.Buffer
+	if err := e.Encode(&b); err != nil {
+		t.Fatalf("Encoding error: %v", err)
+	}
+	if b.String() != encodingTestData {
+		t.Errorf("Encoding result %q, want %q", b.String(), encodingTestData)
+	}
+}

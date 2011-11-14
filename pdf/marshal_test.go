@@ -35,7 +35,7 @@ var marshalTests = []marshalTest{
 	{map[name]string{}, `<< >>`},
 	{map[name]string{name("foo"): "bar"}, `<< /foo (bar) >>`},
 	{indirectObject{42, 0, "foo"}, `42 0 obj (foo) endobj`},
-	{indirectReference{42, 0}, `42 0 R`},
+	{Reference{42, 0}, `42 0 R`},
 	{
 		fooStruct{
 			Size:    42,

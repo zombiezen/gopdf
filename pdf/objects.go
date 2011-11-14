@@ -4,6 +4,7 @@ package pdf
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -74,20 +75,12 @@ func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
 	return result, nil
 }
 
-type indirectReference struct {
+// Reference represents a PDF indirect reference.
+type Reference struct {
 	Number     uint
 	Generation uint
 }
 
-const referenceKeyword = "R"
-
-func (ref indirectReference) MarshalPDF() ([]byte, os.Error) {
-	mn, mg := strconv.Uitoa(ref.Number), strconv.Uitoa(ref.Generation)
-	result := make([]byte, 0, len(mn)+1+len(mg)+1+len(referenceKeyword))
-	result = append(result, mn...)
-	result = append(result, ' ')
-	result = append(result, mg...)
-	result = append(result, ' ')
-	result = append(result, referenceKeyword...)
-	return result, nil
+func (ref Reference) MarshalPDF() ([]byte, os.Error) {
+	return []byte(fmt.Sprintf("%d %d R", ref.Number, ref.Generation)), nil
 }
