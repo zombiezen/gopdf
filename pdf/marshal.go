@@ -61,7 +61,7 @@ func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 	case reflect.String:
 		state.WriteString(quote(v.String()))
 		return nil
-	case reflect.Ptr:
+	case reflect.Ptr, reflect.Interface:
 		return state.marshalValue(v.Elem())
 	case reflect.Array, reflect.Slice:
 		return state.marshalSlice(v)
