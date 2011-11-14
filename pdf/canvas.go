@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math"
 )
 
 type Canvas struct {
@@ -40,12 +41,38 @@ func (canvas *Canvas) Stroke(p *Path) {
 	fmt.Fprintf(canvas.contents, "S\n")
 }
 
+func (canvas *Canvas) SetLineWidth(w int) {
+	fmt.Fprintf(canvas.contents, "%d w\n")
+}
+
 func (canvas *Canvas) SetColor(r, g, b float64) {
 	fmt.Fprintf(canvas.contents, "%.2f %.2f %.2f rg\n", r, g, b)
 }
 
 func (canvas *Canvas) SetStrokeColor(r, g, b float64) {
 	fmt.Fprintf(canvas.contents, "%.2f %.2f %.2f RG\n", r, g, b)
+}
+
+func (canvas *Canvas) Push() {
+	fmt.Fprintln(canvas.contents, "q")
+}
+
+func (canvas *Canvas) Pop() {
+	fmt.Fprintln(canvas.contents, "Q")
+}
+
+func (canvas *Canvas) Translate(x, y int) {
+	fmt.Fprintf(canvas.contents, "1 0 0 1 %d %d cm\n", x, y)
+}
+
+func (canvas *Canvas) Scale(x, y float64) {
+	fmt.Fprintf(canvas.contents, "%f 0 0 %f 0 0 cm\n", x, y)
+}
+
+// Rotate rotates the canvas's coordinate system by a given angle (in radians).
+func (canvas *Canvas) Rotate(theta float64) {
+	s, c := math.Sin(theta), math.Cos(theta)
+	fmt.Fprintf(canvas.contents, "%f %f %f %f 0 0 cm\n", c, s, -s, c)
 }
 
 type Path struct {
