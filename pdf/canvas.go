@@ -19,6 +19,10 @@ type Canvas struct {
 	imageCounter uint
 }
 
+func (canvas *Canvas) Document() *Document {
+	return canvas.doc
+}
+
 func (canvas *Canvas) Close() os.Error {
 	return canvas.contents.Close()
 }
