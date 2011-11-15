@@ -12,10 +12,11 @@ import (
 )
 
 type Canvas struct {
-	doc      *Document
-	page     *pageDict
-	ref      Reference
-	contents *stream
+	doc          *Document
+	page         *pageDict
+	ref          Reference
+	contents     *stream
+	imageCounter uint
 }
 
 func (canvas *Canvas) Close() os.Error {
@@ -94,11 +95,24 @@ func (canvas *Canvas) DrawText(text *Text) {
 
 func (canvas *Canvas) DrawImage(image image.Image) {
 	ref := canvas.doc.AddImage(image)
-	// TODO: unique naming
-	name := Name("foo")
+	name := canvas.nextImageName()
 	canvas.page.Resources.XObject[name] = ref
 	marshalledName, _ := name.MarshalPDF()
 	fmt.Fprintf(canvas.contents, "%s Do\n", marshalledName)
+}
+
+const anonymousImageFormat = "__image%d__"
+
+func (canvas *Canvas) nextImageName() Name {
+	var name Name
+	for {
+		name = Name(fmt.Sprintf(anonymousImageFormat, canvas.imageCounter))
+		canvas.imageCounter++
+		if _, ok := canvas.page.Resources.XObject[name]; !ok {
+			break
+		}
+	}
+	return name
 }
 
 type Path struct {
