@@ -5,6 +5,7 @@ package pdf
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"io"
 	"math"
 	"os"
@@ -89,6 +90,15 @@ func (canvas *Canvas) DrawText(text *Text) {
 	fmt.Fprintln(canvas.contents, "BT")
 	io.Copy(canvas.contents, &text.buf)
 	fmt.Fprintln(canvas.contents, "ET")
+}
+
+func (canvas *Canvas) DrawImage(image image.Image) {
+	ref := canvas.doc.AddImage(image)
+	// TODO: unique naming
+	name := Name("foo")
+	canvas.page.Resources.XObject[name] = ref
+	marshalledName, _ := name.MarshalPDF()
+	fmt.Fprintf(canvas.contents, "%s Do\n", marshalledName)
 }
 
 type Path struct {

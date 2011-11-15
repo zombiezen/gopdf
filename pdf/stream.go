@@ -17,11 +17,13 @@ type stream struct {
 	bytes.Buffer
 	writer io.Writer
 	filter Name
+	extra  map[Name]interface{}
 }
 
 func newStream(filter Name) *stream {
 	st := new(stream)
 	st.filter = filter
+	st.extra = make(map[Name]interface{})
 	switch filter {
 	case streamLZWDecode:
 		st.writer = lzw.NewWriter(&st.Buffer, lzw.MSB, 8)
@@ -30,6 +32,11 @@ func newStream(filter Name) *stream {
 		st.writer = &st.Buffer
 	}
 	return st
+}
+
+// Extra returns a map of extra information attached to the stream.
+func (st *stream) Extra() map[Name]interface{} {
+	return st.extra
 }
 
 func (st *stream) ReadFrom(r io.Reader) (n int64, err os.Error) {
@@ -62,12 +69,15 @@ const (
 )
 
 func (st *stream) MarshalPDF() ([]byte, os.Error) {
-	d := map[Name]interface{}{
-		"Length": st.Len(),
+	d := make(map[Name]interface{}, len(st.extra)+2)
+	for k, v := range st.extra {
+		d[k] = v
 	}
+	d["Length"] = st.Len()
 	if st.filter != streamNoFilter {
 		d["Filter"] = st.filter
 	}
+
 	mdict, err := Marshal(d)
 	if err != nil {
 		return nil, err
