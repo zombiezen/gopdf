@@ -17,13 +17,11 @@ type stream struct {
 	bytes.Buffer
 	writer io.Writer
 	filter Name
-	extra  map[Name]interface{}
 }
 
 func newStream(filter Name) *stream {
 	st := new(stream)
 	st.filter = filter
-	st.extra = make(map[Name]interface{})
 	switch filter {
 	case streamLZWDecode:
 		st.writer = lzw.NewWriter(&st.Buffer, lzw.MSB, 8)
@@ -32,11 +30,6 @@ func newStream(filter Name) *stream {
 		st.writer = &st.Buffer
 	}
 	return st
-}
-
-// Extra returns a map of extra information attached to the stream.
-func (st *stream) Extra() map[Name]interface{} {
-	return st.extra
 }
 
 func (st *stream) ReadFrom(r io.Reader) (n int64, err os.Error) {
@@ -63,30 +56,82 @@ func (st *stream) Close() os.Error {
 	return nil
 }
 
+func (st *stream) MarshalPDF() ([]byte, os.Error) {
+	return marshalStream(streamInfo{
+		Length: st.Len(),
+		Filter: st.filter,
+	}, st.Bytes())
+}
+
 const (
-	streamBegin = "stream\r\n"
+	deviceRGBColorSpace Name = "DeviceRGB"
+)
+
+type imageStream struct {
+	*stream
+	Width            int
+	Height           int
+	BitsPerComponent int
+	ColorSpace       Name
+}
+
+func newImageStream(filter Name, w, h int) *imageStream {
+	return &imageStream{
+		stream:           newStream(filter),
+		Width:            w,
+		Height:           h,
+		BitsPerComponent: 8,
+		ColorSpace:       deviceRGBColorSpace,
+	}
+}
+
+func (st *imageStream) MarshalPDF() ([]byte, os.Error) {
+	return marshalStream(imageStreamInfo{
+		Type:             xobjectType,
+		Subtype:          imageSubtype,
+		Length:           st.Len(),
+		Filter:           st.filter,
+		Width:            st.Width,
+		Height:           st.Height,
+		BitsPerComponent: st.BitsPerComponent,
+		ColorSpace:       st.ColorSpace,
+	}, st.Bytes())
+}
+
+const (
+	streamBegin = " stream\r\n"
 	streamEnd   = "\r\nendstream"
 )
 
-func (st *stream) MarshalPDF() ([]byte, os.Error) {
-	d := make(map[Name]interface{}, len(st.extra)+2)
-	for k, v := range st.extra {
-		d[k] = v
-	}
-	d["Length"] = st.Len()
-	if st.filter != streamNoFilter {
-		d["Filter"] = st.filter
-	}
-
-	mdict, err := Marshal(d)
+// marshalStream encodes a generic stream.  The resulting data encodes the
+// given object and a sequence of bytes.  This function does not enforce any
+// rules about the object being encoded.
+func marshalStream(obj interface{}, data []byte) ([]byte, os.Error) {
+	mobj, err := Marshal(obj)
 	if err != nil {
 		return nil, err
 	}
 
-	var b bytes.Buffer
-	b.Write(mdict)
-	b.WriteString(streamBegin)
-	b.Write(st.Bytes())
-	b.WriteString(streamEnd)
-	return b.Bytes(), nil
+	b := make([]byte, 0, len(mobj)+len(streamBegin)+len(data)+len(streamEnd))
+	b = append(b, mobj...)
+	b = append(b, []byte(streamBegin)...)
+	b = append(b, data...)
+	b = append(b, []byte(streamEnd)...)
+	return b, nil
+}
+
+type streamInfo struct {
+	Length int
+	Filter Name `pdf:",omitempty"`
+}
+
+type imageStreamInfo struct {
+	Type             Name
+	Subtype          Name
+	Length           int
+	Filter           Name `pdf:",omitempty"`
+	Width            int
+	Height           int
+	BitsPerComponent int
+	ColorSpace       Name
 }

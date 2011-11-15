@@ -72,16 +72,8 @@ func (doc *Document) StandardFont(name Name) Reference {
 func (doc *Document) AddImage(img image.Image) Reference {
 	bd := img.Bounds()
 	// TODO: LZW compress (seems to write bad codes)
-	st := newStream(streamNoFilter)
+	st := newImageStream(streamNoFilter, bd.Dx(), bd.Dy())
 	defer st.Close()
-	extra := st.Extra()
-
-	extra["Type"] = xobjectType
-	extra["Subtype"] = imageSubtype
-	extra["Width"] = bd.Dx()
-	extra["Height"] = bd.Dy()
-	extra["BitsPerComponent"] = 8
-	extra["ColorSpace"] = Name("DeviceRGB")
 	encodeImageStream(st, img)
 	return doc.Add(st)
 }
