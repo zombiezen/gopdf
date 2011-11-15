@@ -135,17 +135,23 @@ func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
 			continue
 		}
 
-		tag := f.Name
+		tag, omitEmpty := f.Name, false
 		if tv := f.Tag.Get("pdf"); tv != "" {
 			if tv == "-" {
 				continue
 			}
 
-			// XXX: options?
-			tag = tv
+			name, options := parseTag(tv)
+			if name != "" {
+				tag = name
+			}
+			omitEmpty = options.Contains("omitempty")
 		}
 
 		fieldValue := v.Field(i)
+		if omitEmpty && isEmptyValue(fieldValue) {
+			continue
+		}
 
 		// Marshal key
 		mk, err := Name(tag).MarshalPDF()
@@ -163,4 +169,38 @@ func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
 	}
 	state.WriteString(">>")
 	return nil
+}
+
+type tagOptions []string
+
+func parseTag(tag string) (name string, options tagOptions) {
+	result := strings.Split(tag, ",")
+	return result[0], tagOptions(result[1:])
+}
+
+func (options tagOptions) Contains(opt string) bool {
+	for _, o := range options {
+		if opt == o {
+			return true
+		}
+	}
+	return false
+}
+
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
 }

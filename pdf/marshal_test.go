@@ -16,6 +16,7 @@ type fooStruct struct {
 	Params  map[Name]string
 	NotHere string  `pdf:"-"`
 	Rename  float64 `pdf:"Pi"`
+	TheVoid []int   `pdf:",omitempty"`
 }
 
 var marshalTests = []marshalTest{
@@ -42,6 +43,17 @@ var marshalTests = []marshalTest{
 			Params:  map[Name]string{Name("this"): "that"},
 			NotHere: "XXX",
 			Rename:  3.141592,
+			TheVoid: []int{1, 2, 3},
+		},
+		`<< /Size 42 /Params << /this (that) >> /Pi 3.14159 /TheVoid [ 1 2 3 ] >>`,
+	},
+	{
+		fooStruct{
+			Size:    42,
+			Params:  map[Name]string{Name("this"): "that"},
+			NotHere: "XXX",
+			Rename:  3.141592,
+			TheVoid: nil,
 		},
 		`<< /Size 42 /Params << /this (that) >> /Pi 3.14159 >>`,
 	},
