@@ -9,7 +9,7 @@ import (
 
 const (
 	streamNoFilter  Name = ""
-	streamLZWDecode      = "LZWDecode"
+	streamLZWDecode Name = "LZWDecode"
 )
 
 // Stream is a blob of data.

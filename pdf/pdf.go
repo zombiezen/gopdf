@@ -171,26 +171,24 @@ const (
 
 // The PDF standard 14 fonts
 const (
-	_ Name = ""
+	Courier            Name = "Courier"
+	CourierBold        Name = "Courier-Bold"
+	CourierOblique     Name = "Courier-Oblique"
+	CourierBoldOblique Name = "Courier-BoldOblique"
 
-	Courier            = "Courier"
-	CourierBold        = "Courier-Bold"
-	CourierOblique     = "Courier-Oblique"
-	CourierBoldOblique = "Courier-BoldOblique"
+	Helvetica            Name = "Helvetica"
+	HelveticaBold        Name = "Helvetica-Bold"
+	HelveticaOblique     Name = "Helvetica-Oblique"
+	HelveticaBoldOblique Name = "Helvetica-BoldOblique"
 
-	Helvetica            = "Helvetica"
-	HelveticaBold        = "Helvetica-Bold"
-	HelveticaOblique     = "Helvetica-Oblique"
-	HelveticaBoldOblique = "Helvetica-BoldOblique"
+	Symbol Name = "Symbol"
 
-	Symbol = "Symbol"
+	Times           Name = "Times-Roman"
+	TimesBold       Name = "Times-Bold"
+	TimesItalic     Name = "Times-Italic"
+	TimesBoldItalic Name = "Times-BoldItalic"
 
-	Times           = "Times-Roman"
-	TimesBold       = "Times-Bold"
-	TimesItalic     = "Times-Italic"
-	TimesBoldItalic = "Times-BoldItalic"
-
-	ZapfDingbats = "ZapfDingbats"
+	ZapfDingbats Name = "ZapfDingbats"
 )
 
 type standardFontDict struct {
