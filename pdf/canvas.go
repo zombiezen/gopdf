@@ -72,14 +72,18 @@ func (canvas *Canvas) Translate(x, y int) {
 	fmt.Fprintf(canvas.contents, "1 0 0 1 %d %d cm\n", x, y)
 }
 
-func (canvas *Canvas) Scale(x, y float64) {
-	fmt.Fprintf(canvas.contents, "%f 0 0 %f 0 0 cm\n", x, y)
-}
-
 // Rotate rotates the canvas's coordinate system by a given angle (in radians).
 func (canvas *Canvas) Rotate(theta float64) {
 	s, c := math.Sin(theta), math.Cos(theta)
 	fmt.Fprintf(canvas.contents, "%f %f %f %f 0 0 cm\n", c, s, -s, c)
+}
+
+func (canvas *Canvas) Scale(x, y float64) {
+	fmt.Fprintf(canvas.contents, "%f 0 0 %f 0 0 cm\n", x, y)
+}
+
+func (canvas *Canvas) Transform(a, b, c, d, e, f float64) {
+	fmt.Fprintf(canvas.contents, "%f %f %f %f %f %f cm\n", a, b, c, d, e, f)
 }
 
 func (canvas *Canvas) DrawText(text *Text) {
