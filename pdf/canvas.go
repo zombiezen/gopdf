@@ -97,12 +97,19 @@ func (canvas *Canvas) DrawText(text *Text) {
 	fmt.Fprintln(canvas.contents, "ET")
 }
 
-func (canvas *Canvas) DrawImage(image image.Image) {
-	ref := canvas.doc.AddImage(image)
+func (canvas *Canvas) DrawImage(img image.Image, x, y, w, h int) {
+	canvas.DrawImageReference(canvas.doc.AddImage(img), x, y, w, h)
+}
+
+func (canvas *Canvas) DrawImageReference(ref Reference, x, y, w, h int) {
 	name := canvas.nextImageName()
 	canvas.page.Resources.XObject[name] = ref
 	marshalledName, _ := name.MarshalPDF()
+
+	canvas.Push()
+	canvas.Transform(float64(w), 0, 0, float64(h), float64(x), float64(y))
 	fmt.Fprintf(canvas.contents, "%s Do\n", marshalledName)
+	canvas.Pop()
 }
 
 const anonymousImageFormat = "__image%d__"
