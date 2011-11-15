@@ -3,13 +3,15 @@ package pdf
 import (
 	"bytes"
 	"compress/lzw"
+	"compress/zlib"
 	"io"
 	"os"
 )
 
 const (
-	streamNoFilter  Name = ""
-	streamLZWDecode Name = "LZWDecode"
+	streamNoFilter    Name = ""
+	streamLZWDecode   Name = "LZWDecode"
+	streamFlateDecode Name = "FlateDecode"
 )
 
 // Stream is a blob of data.
@@ -25,6 +27,8 @@ func newStream(filter Name) *stream {
 	switch filter {
 	case streamLZWDecode:
 		st.writer = lzw.NewWriter(&st.Buffer, lzw.MSB, 8)
+	case streamFlateDecode:
+		st.writer, _ = zlib.NewWriter(&st.Buffer)
 	default:
 		// TODO: warn about bad filter names?
 		st.writer = &st.Buffer

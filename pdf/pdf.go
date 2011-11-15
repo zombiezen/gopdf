@@ -40,7 +40,7 @@ func (doc *Document) NewPage(width, height int) *Canvas {
 	pageRef := doc.Add(page)
 	doc.pages = append(doc.pages, indirectObject{pageRef, page})
 
-	stream := newStream(streamLZWDecode)
+	stream := newStream(streamFlateDecode)
 	page.Contents = doc.Add(stream)
 
 	return &Canvas{
@@ -71,8 +71,7 @@ func (doc *Document) StandardFont(name Name) Reference {
 
 func (doc *Document) AddImage(img image.Image) Reference {
 	bd := img.Bounds()
-	// TODO: LZW compress (seems to write bad codes)
-	st := newImageStream(streamNoFilter, bd.Dx(), bd.Dy())
+	st := newImageStream(streamFlateDecode, bd.Dx(), bd.Dy())
 	defer st.Close()
 	encodeImageStream(st, img)
 	return doc.Add(st)

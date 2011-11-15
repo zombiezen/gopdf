@@ -2,11 +2,12 @@ package pdf
 
 import (
 	"compress/lzw"
+	"compress/zlib"
 	"io/ioutil"
 	"testing"
 )
 
-const streamTestString = "Hello, World!\n"
+const streamTestString = "Hello, 世界!\n"
 
 func TestUnfilteredStream(t *testing.T) {
 	st := newStream(streamNoFilter)
@@ -29,7 +30,19 @@ func TestLZWStream(t *testing.T) {
 	}
 }
 
-const expectedMarshalStreamOutput = "<< /Length 14 >> stream\r\n" + streamTestString + "\r\nendstream"
+func TestFlateStream(t *testing.T) {
+	st := newStream(streamFlateDecode)
+	st.WriteString(streamTestString)
+	st.Close()
+
+	r, _ := zlib.NewReader(st)
+	output, _ := ioutil.ReadAll(r)
+	if string(output) != streamTestString {
+		t.Errorf("Stream is %q, wanted %q", output, streamTestString)
+	}
+}
+
+const expectedMarshalStreamOutput = "<< /Length 15 >> stream\r\n" + streamTestString + "\r\nendstream"
 
 func TestMarshalStream(t *testing.T) {
 	b, err := marshalStream(streamInfo{Length: len(streamTestString)}, []byte(streamTestString))
