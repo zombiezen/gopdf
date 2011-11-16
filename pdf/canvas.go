@@ -11,6 +11,15 @@ import (
 	"os"
 )
 
+// Common page sizes (in typographical points)
+const (
+	USLetterWidth  = 612
+	USLetterHeight = 792
+
+	A4Width  = 11.690
+	A4Height = 8.268
+)
+
 // Canvas is a two-dimensional drawing region on a single page.  You can obtain
 // a canvas once you have created a document.
 type Canvas struct {

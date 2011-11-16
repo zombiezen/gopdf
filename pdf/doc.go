@@ -19,7 +19,7 @@
 
 		func main() {
 			doc := pdf.New()
-			canvas := doc.NewPage(612, 792) // standard US letter
+			canvas := doc.NewPage(pdf.USLetterWidth, pdf.USLetterHeight)
 			canvas.Translate(100, 100)
 
 			path := new(pdf.Path)
