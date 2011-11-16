@@ -68,41 +68,6 @@ func (st *stream) MarshalPDF() ([]byte, os.Error) {
 }
 
 const (
-	deviceRGBColorSpace Name = "DeviceRGB"
-)
-
-type imageStream struct {
-	*stream
-	Width            int
-	Height           int
-	BitsPerComponent int
-	ColorSpace       Name
-}
-
-func newImageStream(filter Name, w, h int) *imageStream {
-	return &imageStream{
-		stream:           newStream(filter),
-		Width:            w,
-		Height:           h,
-		BitsPerComponent: 8,
-		ColorSpace:       deviceRGBColorSpace,
-	}
-}
-
-func (st *imageStream) MarshalPDF() ([]byte, os.Error) {
-	return marshalStream(imageStreamInfo{
-		Type:             xobjectType,
-		Subtype:          imageSubtype,
-		Length:           st.Len(),
-		Filter:           st.filter,
-		Width:            st.Width,
-		Height:           st.Height,
-		BitsPerComponent: st.BitsPerComponent,
-		ColorSpace:       st.ColorSpace,
-	}, st.Bytes())
-}
-
-const (
 	streamBegin = " stream\r\n"
 	streamEnd   = "\r\nendstream"
 )
@@ -127,15 +92,4 @@ func marshalStream(obj interface{}, data []byte) ([]byte, os.Error) {
 type streamInfo struct {
 	Length int
 	Filter Name `pdf:",omitempty"`
-}
-
-type imageStreamInfo struct {
-	Type             Name
-	Subtype          Name
-	Length           int
-	Filter           Name `pdf:",omitempty"`
-	Width            int
-	Height           int
-	BitsPerComponent int
-	ColorSpace       Name
 }

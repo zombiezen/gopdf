@@ -4,6 +4,7 @@ TARG=bitbucket.org/zombiezen/gopdf/pdf
 GOFILES=\
 	canvas.go\
 	encode.go\
+	image.go\
 	marshal.go\
 	pdf.go\
 	objects.go\
