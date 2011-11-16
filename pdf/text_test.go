@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-const textExpectedOutput = `/Helvetica 12 Tf
-14 TL
+const textExpectedOutput = `/Helvetica 12.00000 Tf
+14.00000 TL
 (Hello, World!) Tj
 T*
 (This is SPARTA!!1!) Tj

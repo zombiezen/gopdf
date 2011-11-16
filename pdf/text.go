@@ -20,7 +20,7 @@ func (text *Text) Text(s string) {
 
 // SetFont changes the current font to either a standard font or a font
 // declared in the canvas.
-func (text *Text) SetFont(name Name, size int) {
+func (text *Text) SetFont(name Name, size float32) {
 	nameData, err := name.MarshalPDF()
 	if err != nil {
 		// TODO: log error?
@@ -31,12 +31,12 @@ func (text *Text) SetFont(name Name, size int) {
 		text.fonts = make(map[Name]bool)
 	}
 	text.fonts[name] = true
-	fmt.Fprintf(&text.buf, "%s %d Tf\n", nameData, size)
+	fmt.Fprintf(&text.buf, "%s %.*f Tf\n", nameData, marshalFloatPrec, size)
 }
 
 // SetLeading changes the amount of space between lines.
-func (text *Text) SetLeading(leading int) {
-	fmt.Fprintf(&text.buf, "%d TL\n", leading)
+func (text *Text) SetLeading(leading float32) {
+	fmt.Fprintf(&text.buf, "%.*f TL\n", marshalFloatPrec, leading)
 }
 
 // NextLine advances the current text position to the next line, based on the
@@ -47,8 +47,8 @@ func (text *Text) NextLine() {
 
 // NextLineOffset advances the current text position by the given offset (in
 // typographical points).
-func (text *Text) NextLineOffset(tx, ty int) {
-	fmt.Fprintf(&text.buf, "%d %d Td\n", tx, ty)
+func (text *Text) NextLineOffset(tx, ty float32) {
+	fmt.Fprintf(&text.buf, "%.*f %.*f Td\n", marshalFloatPrec, tx, marshalFloatPrec, ty)
 }
 
 // Standard 14 fonts

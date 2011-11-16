@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-const pathExpectedOutput = `12 34 m
--56 78 l
+const pathExpectedOutput = `12.00000 34.00000 m
+-56.00000 78.00000 l
 h
 `
 

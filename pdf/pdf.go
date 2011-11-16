@@ -29,7 +29,7 @@ func New() *Document {
 }
 
 // NewPage creates a new canvas with the given dimensions.
-func (doc *Document) NewPage(width, height int) *Canvas {
+func (doc *Document) NewPage(width, height float32) *Canvas {
 	page := &pageDict{
 		Type:     pageType,
 		MediaBox: Rectangle{0, 0, width, height},
@@ -152,7 +152,7 @@ type pageDict struct {
 
 // A Rectangle defines a rectangle with two points.  The unit for the
 // coordinates is the typographical point (1/72 inch).
-type Rectangle [4]int
+type Rectangle [4]float32
 
 type resources struct {
 	ProcSet []Name
