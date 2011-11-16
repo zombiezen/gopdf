@@ -20,6 +20,26 @@ const (
 	A4Height = 8.268
 )
 
+// writeCommand writes a PDF graphics command.
+func writeCommand(w io.Writer, op string, args ...interface{}) os.Error {
+	for _, arg := range args {
+		if m, err := Marshal(arg); err == nil {
+			if _, err := w.Write(append(m, ' ')); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	if _, err := io.WriteString(w, op); err != nil {
+		return err
+	}
+	if _, err := w.Write([]byte{'\n'}); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Canvas is a two-dimensional drawing region on a single page.  You can obtain
 // a canvas once you have created a document.
 type Canvas struct {
@@ -56,66 +76,64 @@ func (canvas *Canvas) SetCrop(width, height float32) {
 // the file.
 func (canvas *Canvas) FillStroke(p *Path) {
 	io.Copy(canvas.contents, &p.buf)
-	fmt.Fprintf(canvas.contents, "B\n")
+	writeCommand(canvas.contents, "B")
 }
 
 // Fill paints the area enclosed by the given path using the current fill color.
 func (canvas *Canvas) Fill(p *Path) {
 	io.Copy(canvas.contents, &p.buf)
-	fmt.Fprintf(canvas.contents, "f\n")
+	writeCommand(canvas.contents, "f")
 }
 
 // Stroke paints a line along the given path using the current stroke color.
 func (canvas *Canvas) Stroke(p *Path) {
 	io.Copy(canvas.contents, &p.buf)
-	fmt.Fprintf(canvas.contents, "S\n")
+	writeCommand(canvas.contents, "S")
 }
 
 func (canvas *Canvas) SetLineWidth(w float32) {
-	fmt.Fprintf(canvas.contents, "%.*f w\n", marshalFloatPrec, w)
+	writeCommand(canvas.contents, "w", w)
 }
-
-const colorFloatPrec = 2
 
 // SetColor changes the current fill color to the given RGB triple (in device
 // RGB space).
 func (canvas *Canvas) SetColor(r, g, b float32) {
-	fmt.Fprintf(canvas.contents, "%.*f %.*f %.*f rg\n", colorFloatPrec, r, colorFloatPrec, g, colorFloatPrec, b)
+	writeCommand(canvas.contents, "rg", r, g, b)
 }
 
 // SetStrokeColor changes the current stroke color to the given RGB triple (in
 // device RGB space).
 func (canvas *Canvas) SetStrokeColor(r, g, b float32) {
-	fmt.Fprintf(canvas.contents, "%.*f %.*f %.*f RG\n", colorFloatPrec, r, colorFloatPrec, g, colorFloatPrec, b)
+	writeCommand(canvas.contents, "RG", r, g, b)
 }
 
 // Push saves a copy of the current graphics state.  The state can later be
 // restored using Pop.
 func (canvas *Canvas) Push() {
-	fmt.Fprintln(canvas.contents, "q")
+	writeCommand(canvas.contents, "q")
 }
 
 // Pop restores the most recently saved graphics state by popping it from the
 // stack.
 func (canvas *Canvas) Pop() {
-	fmt.Fprintln(canvas.contents, "Q")
+	writeCommand(canvas.contents, "Q")
 }
 
 // Translate moves the canvas's coordinates system by the given offset (in
 // typographical points).
 func (canvas *Canvas) Translate(x, y float32) {
-	fmt.Fprintf(canvas.contents, "1 0 0 1 %.*f %.*f cm\n", marshalFloatPrec, x, marshalFloatPrec, y)
+	writeCommand(canvas.contents, "cm", 1, 0, 0, 1, x, y)
 }
 
 // Rotate rotates the canvas's coordinate system by a given angle (in radians).
 func (canvas *Canvas) Rotate(theta float32) {
 	s, c := math.Sin(float64(theta)), math.Cos(float64(theta))
-	fmt.Fprintf(canvas.contents, "%.*f %.*f %.*f %.*f 0 0 cm\n", marshalFloatPrec, c, marshalFloatPrec, s, marshalFloatPrec, -s, marshalFloatPrec, c)
+	writeCommand(canvas.contents, "cm", c, s, -s, c, 0, 0)
 }
 
 // Scale multiplies the canvas's coordinate system by the given scalars.
 func (canvas *Canvas) Scale(x, y float32) {
-	fmt.Fprintf(canvas.contents, "%.*f 0 0 %.*f 0 0 cm\n", marshalFloatPrec, x, marshalFloatPrec, y)
+	writeCommand(canvas.contents, "cm", x, 0, 0, y, 0, 0)
 }
 
 // Transform concatenates a 3x3 matrix with the current transformation matrix.
@@ -127,7 +145,7 @@ func (canvas *Canvas) Scale(x, y float32) {
 //
 // For more information, see Section 8.3.4 of ISO 32000-1.
 func (canvas *Canvas) Transform(a, b, c, d, e, f float32) {
-	fmt.Fprintf(canvas.contents, "%.*f %.*f %.*f %.*f %.*f %.*f cm\n", marshalFloatPrec, a, marshalFloatPrec, b, marshalFloatPrec, c, marshalFloatPrec, d, marshalFloatPrec, e, marshalFloatPrec, f)
+	writeCommand(canvas.contents, "cm", a, b, c, d, e, f)
 }
 
 // DrawText paints a text object onto the canvas.
@@ -137,9 +155,9 @@ func (canvas *Canvas) DrawText(text *Text) {
 			canvas.page.Resources.Font[fontName] = canvas.doc.StandardFont(fontName)
 		}
 	}
-	fmt.Fprintln(canvas.contents, "BT")
+	writeCommand(canvas.contents, "BT")
 	io.Copy(canvas.contents, &text.buf)
-	fmt.Fprintln(canvas.contents, "ET")
+	writeCommand(canvas.contents, "ET")
 }
 
 // DrawImage paints a raster image at the given location and scaled to the
@@ -154,11 +172,10 @@ func (canvas *Canvas) DrawImage(img image.Image, x, y, w, h float32) {
 func (canvas *Canvas) DrawImageReference(ref Reference, x, y, w, h float32) {
 	name := canvas.nextImageName()
 	canvas.page.Resources.XObject[name] = ref
-	marshalledName, _ := name.MarshalPDF()
 
 	canvas.Push()
 	canvas.Transform(w, 0, 0, h, x, y)
-	fmt.Fprintf(canvas.contents, "%s Do\n", marshalledName)
+	writeCommand(canvas.contents, "Do", name)
 	canvas.Pop()
 }
 
@@ -185,17 +202,17 @@ type Path struct {
 // Move begins a new subpath by moving the current point to the given location
 // (in typographical points).
 func (path *Path) Move(x, y float32) {
-	fmt.Fprintf(&path.buf, "%.*f %.*f m\n", marshalFloatPrec, x, marshalFloatPrec, y)
+	writeCommand(&path.buf, "m", x, y)
 }
 
 // Line appends a line segment from the current point to the given location (in
 // typographical points).
 func (path *Path) Line(x, y float32) {
-	fmt.Fprintf(&path.buf, "%.*f %.*f l\n", marshalFloatPrec, x, marshalFloatPrec, y)
+	writeCommand(&path.buf, "l", x, y)
 }
 
 // Close appends a line segment from the current point to the starting point of
 // the subpath.
 func (path *Path) Close() {
-	fmt.Fprintf(&path.buf, "h\n")
+	writeCommand(&path.buf, "h")
 }
