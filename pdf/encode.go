@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-// An Encoder writes the PDF file format.
+// Encoder writes the PDF file format structure.
 type Encoder struct {
 	objects []interface{}
 	Root    Reference
@@ -19,6 +19,8 @@ type trailer struct {
 	Root Reference
 }
 
+// Add appends an object to the file.  The object is marshalled only when an
+// encoding is requested.
 func (enc *Encoder) Add(v interface{}) Reference {
 	enc.objects = append(enc.objects, v)
 	return Reference{uint(len(enc.objects)), 0}
@@ -29,6 +31,7 @@ const (
 	newline = "\r\n"
 )
 
+// Cross reference strings
 const (
 	crossReferenceSectionHeader    = "xref" + newline
 	crossReferenceSubsectionFormat = "%d %d" + newline
@@ -42,6 +45,7 @@ const startxrefFormat = "startxref" + newline + "%d" + newline
 
 const eofString = "%%EOF" + newline
 
+// Encode writes an entire PDF document by marshalling the added objects.
 func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	w := &offsetWriter{Writer: wr}
 
@@ -114,6 +118,7 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	return nil
 }
 
+// offsetWriter tracks how many bytes have been written to it.
 type offsetWriter struct {
 	io.Writer
 	offset int64

@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// Document provides a high-level drawing interface for the PDF format.
 type Document struct {
 	Encoder
 	catalog *catalog
@@ -16,7 +17,7 @@ type Document struct {
 	fonts   map[Name]Reference
 }
 
-// New creates a document value.
+// New creates a new document with no pages.
 func New() *Document {
 	doc := new(Document)
 	doc.catalog = &catalog{
@@ -27,6 +28,7 @@ func New() *Document {
 	return doc
 }
 
+// NewPage creates a new canvas with the given dimensions.
 func (doc *Document) NewPage(width, height int) *Canvas {
 	page := &pageDict{
 		Type:     pageType,
@@ -70,6 +72,9 @@ func (doc *Document) StandardFont(name Name) Reference {
 	return ref
 }
 
+// AddImage encodes an image into the document's stream and returns its PDF
+// file reference.  This reference can be used to draw the image multiple times
+// without storing the image multiple times.
 func (doc *Document) AddImage(img image.Image) Reference {
 	bd := img.Bounds()
 	st := newImageStream(streamFlateDecode, bd.Dx(), bd.Dy())
@@ -86,6 +91,7 @@ func (doc *Document) AddImage(img image.Image) Reference {
 	return doc.Add(st)
 }
 
+// Encode writes the document to a writer in the PDF format.
 func (doc *Document) Encode(w io.Writer) os.Error {
 	pageRoot := &pageRootNode{
 		Type:  pageNodeType,
@@ -101,6 +107,7 @@ func (doc *Document) Encode(w io.Writer) os.Error {
 	return doc.Encoder.Encode(w)
 }
 
+// PDF object types
 const (
 	catalogType  Name = "Catalog"
 	pageNodeType Name = "Pages"
@@ -109,6 +116,7 @@ const (
 	xobjectType  Name = "XObject"
 )
 
+// PDF object subtypes
 const (
 	imageSubtype Name = "Image"
 
@@ -142,7 +150,9 @@ type pageDict struct {
 	Contents  Reference
 }
 
-type Rectangle [4]int // in points
+// A Rectangle defines a rectangle with two points.  The unit for the
+// coordinates is the typographical point (1/72 inch).
+type Rectangle [4]int
 
 type resources struct {
 	ProcSet []Name
@@ -150,6 +160,7 @@ type resources struct {
 	XObject map[Name]interface{}
 }
 
+// Predefined procedure sets
 const (
 	pdfProcSet    Name = "PDF"
 	textProcSet   Name = "Text"

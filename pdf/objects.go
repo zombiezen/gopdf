@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// Name is a PDF Name object.
+// Name is a PDF name object, which is used as an identifier.
 type Name string
 
 func (n Name) String() string {
@@ -47,7 +47,7 @@ func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
 	return result, nil
 }
 
-// Reference represents a PDF indirect reference.
+// Reference holds a PDF indirect reference.
 type Reference struct {
 	Number     uint
 	Generation uint

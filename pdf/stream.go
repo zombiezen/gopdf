@@ -14,11 +14,16 @@ const (
 	streamFlateDecode Name = "FlateDecode"
 )
 
-// Stream is a blob of data.
+// stream is a blob of data stored in a PDF file.
 type stream struct {
 	bytes.Buffer
 	writer io.Writer
 	filter Name
+}
+
+type streamInfo struct {
+	Length int
+	Filter Name `pdf:",omitempty"`
 }
 
 func newStream(filter Name) *stream {
@@ -87,9 +92,4 @@ func marshalStream(obj interface{}, data []byte) ([]byte, os.Error) {
 	b = append(b, data...)
 	b = append(b, []byte(streamEnd)...)
 	return b, nil
-}
-
-type streamInfo struct {
-	Length int
-	Filter Name `pdf:",omitempty"`
 }

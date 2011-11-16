@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// A Marshaler can produce a PDF object.
 type Marshaler interface {
 	MarshalPDF() ([]byte, os.Error)
 }
