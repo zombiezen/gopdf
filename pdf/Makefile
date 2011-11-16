@@ -8,5 +8,6 @@ GOFILES=\
 	pdf.go\
 	objects.go\
 	stream.go\
+	text.go\
 
 include $(GOROOT)/src/Make.pkg

@@ -215,28 +215,6 @@ const (
 	imageIProcSet Name = "ImageI"
 )
 
-// The PDF standard 14 fonts
-const (
-	Courier            Name = "Courier"
-	CourierBold        Name = "Courier-Bold"
-	CourierOblique     Name = "Courier-Oblique"
-	CourierBoldOblique Name = "Courier-BoldOblique"
-
-	Helvetica            Name = "Helvetica"
-	HelveticaBold        Name = "Helvetica-Bold"
-	HelveticaOblique     Name = "Helvetica-Oblique"
-	HelveticaBoldOblique Name = "Helvetica-BoldOblique"
-
-	Symbol Name = "Symbol"
-
-	Times           Name = "Times-Roman"
-	TimesBold       Name = "Times-Bold"
-	TimesItalic     Name = "Times-Italic"
-	TimesBoldItalic Name = "Times-BoldItalic"
-
-	ZapfDingbats Name = "ZapfDingbats"
-)
-
 type standardFontDict struct {
 	Type     Name
 	Subtype  Name
