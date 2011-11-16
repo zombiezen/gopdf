@@ -33,9 +33,9 @@ func TestText(t *testing.T) {
 	text := new(Text)
 	text.SetFont(Helvetica, 12)
 	text.SetLeading(14)
-	text.Show("Hello, World!")
+	text.Text("Hello, World!")
 	text.NextLine()
-	text.Show("This is SPARTA!!1!")
+	text.Text("This is SPARTA!!1!")
 
 	if text.buf.String() != textExpectedOutput {
 		t.Errorf("Output was %q, expected %q", text.buf.String(), textExpectedOutput)
