@@ -48,30 +48,53 @@ const eofString = "%%EOF" + newline
 // Encode writes an entire PDF document by marshalling the added objects.
 func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	w := &offsetWriter{Writer: wr}
-
-	// Write header
-	if _, err := io.WriteString(w, header); err != nil {
+	if err := enc.writeHeader(w); err != nil {
 		return err
 	}
+	objectOffsets, err := enc.writeBody(w)
+	if err != nil {
+		return err
+	}
+	tableOffset := w.offset
+	if err := enc.writeXrefTable(w, objectOffsets); err != nil {
+		return err
+	}
+	if err := enc.writeTrailer(w); err != nil {
+		return err
+	}
+	if err := enc.writeStartxref(w, tableOffset); err != nil {
+		return err
+	}
+	if err := enc.writeEOF(w); err != nil {
+		return err
+	}
+	return nil
+}
 
-	// Write body
+func (enc *Encoder) writeHeader(w *offsetWriter) os.Error {
+	_, err := io.WriteString(w, header)
+	return err
+}
+
+func (enc *Encoder) writeBody(w *offsetWriter) ([]int64, os.Error) {
 	objectOffsets := make([]int64, len(enc.objects))
 	for i, obj := range enc.objects {
 		objectOffsets[i] = w.offset
 		data, err := Marshal(indirectObject{Reference{uint(i + 1), 0}, obj})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if _, err = w.Write(data); err != nil {
-			return err
+			return nil, err
 		}
 		if _, err = io.WriteString(w, newline); err != nil {
-			return err
+			return nil, err
 		}
 	}
+	return objectOffsets, nil
+}
 
-	// Write cross-reference table
-	tableOffset := w.offset
+func (enc *Encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) os.Error {
 	if _, err := io.WriteString(w, crossReferenceSectionHeader); err != nil {
 		return err
 	}
@@ -86,8 +109,10 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 			return err
 		}
 	}
+	return nil
+}
 
-	// Write trailer
+func (enc *Encoder) writeTrailer(w *offsetWriter) os.Error {
 	if _, err := io.WriteString(w, trailerHeader); err != nil {
 		return err
 	}
@@ -105,17 +130,17 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	if _, err := io.WriteString(w, newline); err != nil {
 		return err
 	}
-
-	// Write startxref
-	if fmt.Fprintf(w, startxrefFormat, tableOffset); err != nil {
-		return err
-	}
-
-	// Finish file
-	if _, err := io.WriteString(w, eofString); err != nil {
-		return err
-	}
 	return nil
+}
+
+func (enc *Encoder) writeStartxref(w *offsetWriter, tableOffset int64) os.Error {
+	_, err := fmt.Fprintf(w, startxrefFormat, tableOffset)
+	return err
+}
+
+func (enc *Encoder) writeEOF(w *offsetWriter) os.Error {
+	_, err := io.WriteString(w, eofString)
+	return err
 }
 
 // offsetWriter tracks how many bytes have been written to it.
