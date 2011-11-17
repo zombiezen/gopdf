@@ -7,6 +7,7 @@ GOFILES=\
 	encode.go\
 	image.go\
 	marshal.go\
+	metrics.go\
 	pdf.go\
 	objects.go\
 	stream.go\

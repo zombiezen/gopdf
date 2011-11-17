@@ -3,6 +3,7 @@
 package pdf
 
 import (
+	"math"
 	"testing"
 )
 
@@ -31,5 +32,67 @@ func TestText(t *testing.T) {
 		}
 	} else {
 		t.Errorf("Got %d fonts, expected %d", len(text.fonts), 1)
+	}
+}
+
+func floatEq(a, b, epsilon float64) bool {
+	return math.Abs(a-b) < epsilon
+}
+
+func TestTextX(t *testing.T) {
+	text := new(Text)
+	if text.X() != 0 {
+		t.Errorf("Text does not start at X=0 (got %.5f)", text.X())
+	}
+
+	text.SetFont(Helvetica, 12)
+
+	text.Text("Hello!")
+	if !floatEq(float64(text.X()), 30.672, 1e-5) {
+		t.Errorf("\"Hello!\" has wrong X (=%.5f) when %.5f is desired", text.X(), 30.672)
+	}
+
+	text.NextLine()
+	if text.X() != 0 {
+		t.Errorf("Performing NextLine does not reset X (got %.5f)", text.X())
+	}
+
+	text.Text("Hello World")
+	if !floatEq(float64(text.X()), 62.004, 1e-5) {
+		t.Errorf("\"Hello World\" has wrong X (=%.5f) when %.5f is desired", text.X(), 62.004)
+	}
+
+	text.NextLineOffset(41.23, 55.555)
+	if !floatEq(float64(text.X()), 41.23, 1e-3) {
+		t.Errorf("NextLineOffset has wrong X (=%.5f) when %.5f is desired", text.X(), 41.23)
+	}
+}
+
+func TestTextY(t *testing.T) {
+	text := new(Text)
+	if text.Y() != 0 {
+		t.Errorf("Text does not start at Y=0 (got %.5f)", text.Y())
+	}
+
+	text.SetFont(Helvetica, 12)
+	text.Text("Hello!")
+	if text.Y() != 0 {
+		t.Errorf("\"Hello!\" changes baseline (got %.5f)", text.Y())
+	}
+
+	text.NextLine()
+	if text.Y() != 0 {
+		t.Errorf("NextLine defaults to non-zero leading (got %.5f)", text.Y())
+	}
+
+	text.SetLeading(41.23)
+	text.NextLine()
+	if !floatEq(float64(text.Y()), -41.23, 1e-3) {
+		t.Errorf("NextLine does not respect leading, got %.5f when %.5f is desired", text.Y(), -41.23)
+	}
+
+	text.NextLineOffset(1.0, 5.5)
+	if !floatEq(float64(text.Y()), -46.73, 1e-3) {
+		t.Errorf("NextLineOffset does not set Y correctly, got %.5f when %.5f is desired", text.Y(), -46.73)
 	}
 }
