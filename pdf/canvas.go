@@ -53,8 +53,9 @@ func (canvas *Canvas) Close() os.Error {
 }
 
 // Size returns the page's media box (the size of the physical medium).
-func (canvas *Canvas) Size() Rectangle {
-	return canvas.page.MediaBox
+func (canvas *Canvas) Size() (width, height Unit) {
+	mbox := canvas.page.MediaBox
+	return mbox[2] - mbox[0], mbox[3] - mbox[1]
 }
 
 // SetSize changes the page's media box (the size of the physical medium).
