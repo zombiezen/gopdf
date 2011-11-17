@@ -67,14 +67,24 @@ func (canvas *Canvas) Close() os.Error {
 	return canvas.contents.Close()
 }
 
+// Size returns the page's media box (the size of the physical medium).
+func (canvas *Canvas) Size() Rectangle {
+	return canvas.page.MediaBox
+}
+
 // SetSize changes the page's media box (the size of the physical medium).
 func (canvas *Canvas) SetSize(width, height float32) {
 	canvas.page.MediaBox = Rectangle{0, 0, width, height}
 }
 
-// SetCrop changes the page's crop box.
-func (canvas *Canvas) SetCrop(width, height float32) {
-	canvas.page.CropBox = Rectangle{0, 0, width, height}
+// CropBox returns the page's crop box.
+func (canvas *Canvas) CropBox() Rectangle {
+	return canvas.page.CropBox
+}
+
+// SetCropBox changes the page's crop box.
+func (canvas *Canvas) SetCropBox(crop Rectangle) {
+	canvas.page.CropBox = crop
 }
 
 // FillStroke fills then strokes the given path.  This operation has the same
