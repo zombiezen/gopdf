@@ -97,8 +97,21 @@ func (canvas *Canvas) Stroke(p *Path) {
 	writeCommand(canvas.contents, "S")
 }
 
+// SetLineWidth changes the stroke width to the given value (in typographical
+// points).
 func (canvas *Canvas) SetLineWidth(w float32) {
 	writeCommand(canvas.contents, "w", w)
+}
+
+// SetLineDash changes the line dash pattern in the current graphics state.
+// Examples:
+//
+//   c.SetLineDash(0, []float32{})     // solid line
+//   c.SetLineDash(0, []float32{3})    // 3 units on, 3 units off...
+//   c.SetLineDash(0, []float32{2, 1}) // 2 units on, 1 unit off...
+//   c.SetLineDash(1, []float32{2})    // 1 unit on, 2 units off, 2 units on...
+func (canvas *Canvas) SetLineDash(phase float32, dash []float32) {
+	writeCommand(canvas.contents, "d", dash, phase)
 }
 
 // SetColor changes the current fill color to the given RGB triple (in device
