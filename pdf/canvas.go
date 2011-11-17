@@ -230,6 +230,11 @@ func (path *Path) Line(x, y Unit) {
 	writeCommand(&path.buf, "l", x, y)
 }
 
+// Curve appends a cubic Bezier curve to the path.
+func (path *Path) Curve(x1, y1, x2, y2, x3, y3 Unit) {
+	writeCommand(&path.buf, "c", x1, y1, x2, y2, x3, y3)
+}
+
 // Close appends a line segment from the current point to the starting point of
 // the subpath.
 func (path *Path) Close() {
