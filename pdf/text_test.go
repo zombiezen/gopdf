@@ -8,6 +8,7 @@ import (
 )
 
 const textExpectedOutput = `/Helvetica 12.00000 Tf
+14.40000 TL
 14.00000 TL
 (Hello, World!) Tj
 T*
@@ -81,18 +82,18 @@ func TestTextY(t *testing.T) {
 	}
 
 	text.NextLine()
-	if text.Y() != 0 {
-		t.Errorf("NextLine defaults to non-zero leading (got %.5f)", text.Y())
+	if !floatEq(float64(text.Y()), -14.400, 1e-4) {
+		t.Errorf("NextLine y = %.5f (expected %.5f)", text.Y(), -14.400)
 	}
 
 	text.SetLeading(41.23)
 	text.NextLine()
-	if !floatEq(float64(text.Y()), -41.23, 1e-3) {
-		t.Errorf("NextLine does not respect leading, got %.5f when %.5f is desired", text.Y(), -41.23)
+	if !floatEq(float64(text.Y()), -55.630, 1e-4) {
+		t.Errorf("NextLine does not respect leading, y = %.5f (expected %.5f)", text.Y(), -55.630)
 	}
 
 	text.NextLineOffset(1.0, 5.5)
-	if !floatEq(float64(text.Y()), -46.73, 1e-3) {
-		t.Errorf("NextLineOffset does not set Y correctly, got %.5f when %.5f is desired", text.Y(), -46.73)
+	if !floatEq(float64(text.Y()), -50.130, 1e-4) {
+		t.Errorf("NextLineOffset does not set Y correctly, y = %.5f (expected %.5f)", text.Y(), -50.130)
 	}
 }

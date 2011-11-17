@@ -25,8 +25,11 @@ func (text *Text) Text(s string) {
 	}
 }
 
+const defaultLeadingScalar = 1.2
+
 // SetFont changes the current font to either a standard font or a font
-// declared in the canvas.
+// declared in the canvas.  This also changes the leading to 1.2 times the
+// font size.
 func (text *Text) SetFont(name Name, size float32) {
 	if text.fonts == nil {
 		text.fonts = make(map[Name]bool)
@@ -34,6 +37,7 @@ func (text *Text) SetFont(name Name, size float32) {
 	text.fonts[name] = true
 	text.currFont, text.currSize = name, size
 	writeCommand(&text.buf, "Tf", name, size)
+	text.SetLeading(size * defaultLeadingScalar)
 }
 
 // SetLeading changes the amount of space between lines.
@@ -55,7 +59,7 @@ func (text *Text) NextLine() {
 func (text *Text) NextLineOffset(tx, ty float32) {
 	writeCommand(&text.buf, "Td", tx, ty)
 	text.x = tx
-	text.y -= ty
+	text.y += ty
 }
 
 // X returns the current x position of the text cursor.
