@@ -20,6 +20,12 @@ const (
 	A4Height = 8.268
 )
 
+// Common units
+const (
+	Inch = 72
+	Cm   = 28.35
+)
+
 // writeCommand writes a PDF graphics command.
 func writeCommand(w io.Writer, op string, args ...interface{}) os.Error {
 	for _, arg := range args {
