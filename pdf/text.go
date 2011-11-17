@@ -54,8 +54,8 @@ func (text *Text) NextLine() {
 	text.y -= text.currLeading
 }
 
-// NextLineOffset advances the current text position by the given offset (in
-// typographical points).
+// NextLineOffset moves the current text position to an offset relative to the
+// beginning of the line (in typographical points).
 func (text *Text) NextLineOffset(tx, ty float32) {
 	writeCommand(&text.buf, "Td", tx, ty)
 	text.x = tx
