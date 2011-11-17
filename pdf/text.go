@@ -11,10 +11,10 @@ type Text struct {
 	buf   bytes.Buffer
 	fonts map[Name]bool
 
-	x, y        float32
+	x, y        Unit
 	currFont    Name
-	currSize    float32
-	currLeading float32
+	currSize    Unit
+	currLeading Unit
 }
 
 // Text adds a string to the text object.
@@ -30,7 +30,7 @@ const defaultLeadingScalar = 1.2
 // SetFont changes the current font to either a standard font or a font
 // declared in the canvas.  This also changes the leading to 1.2 times the
 // font size.
-func (text *Text) SetFont(name Name, size float32) {
+func (text *Text) SetFont(name Name, size Unit) {
 	if text.fonts == nil {
 		text.fonts = make(map[Name]bool)
 	}
@@ -41,7 +41,7 @@ func (text *Text) SetFont(name Name, size float32) {
 }
 
 // SetLeading changes the amount of space between lines.
-func (text *Text) SetLeading(leading float32) {
+func (text *Text) SetLeading(leading Unit) {
 	writeCommand(&text.buf, "TL", leading)
 	text.currLeading = leading
 }
@@ -55,20 +55,20 @@ func (text *Text) NextLine() {
 }
 
 // NextLineOffset moves the current text position to an offset relative to the
-// beginning of the line (in typographical points).
-func (text *Text) NextLineOffset(tx, ty float32) {
+// beginning of the line.
+func (text *Text) NextLineOffset(tx, ty Unit) {
 	writeCommand(&text.buf, "Td", tx, ty)
 	text.x = tx
 	text.y += ty
 }
 
 // X returns the current x position of the text cursor.
-func (text *Text) X() float32 {
+func (text *Text) X() Unit {
 	return text.x
 }
 
 // Y returns the current y position of the text cursor.
-func (text *Text) Y() float32 {
+func (text *Text) Y() Unit {
 	return text.y
 }
 
@@ -128,11 +128,11 @@ func getFontWidths(fontName Name) []uint16 {
 	return nil
 }
 
-func computeStringWidth(s string, widths []uint16, fontSize float32) float32 {
-	width := float32(0)
+func computeStringWidth(s string, widths []uint16, fontSize Unit) Unit {
+	width := Unit(0)
 	for _, r := range s {
 		if r < len(widths) {
-			width += float32(widths[r])
+			width += Unit(widths[r])
 		}
 	}
 	return width * fontSize / 1000

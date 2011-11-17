@@ -7,6 +7,31 @@ import (
 	"image/ycbcr"
 	"io"
 	"os"
+	"strconv"
+)
+
+// Unit is a device-independent dimensional type.  On a new canvas, this
+// represents 1/72 of an inch.
+type Unit float32
+
+func (unit Unit) String() string {
+	return strconv.Ftoa32(float32(unit), 'f', marshalFloatPrec)
+}
+
+// Common page sizes
+const (
+	USLetterWidth  Unit = 612
+	USLetterHeight Unit = 792
+
+	A4Width  Unit = 11.690
+	A4Height Unit = 8.268
+)
+
+// Common unit scales
+const (
+	Pt   Unit = 1
+	Inch Unit = 72
+	Cm   Unit = 28.35
 )
 
 // Document provides a high-level drawing interface for the PDF format.
@@ -29,7 +54,7 @@ func New() *Document {
 }
 
 // NewPage creates a new canvas with the given dimensions.
-func (doc *Document) NewPage(width, height float32) *Canvas {
+func (doc *Document) NewPage(width, height Unit) *Canvas {
 	page := &pageDict{
 		Type:     pageType,
 		MediaBox: Rectangle{0, 0, width, height},
@@ -150,9 +175,8 @@ type pageDict struct {
 	Contents  Reference
 }
 
-// A Rectangle defines a rectangle with two points.  The unit for the
-// coordinates is the typographical point (1/72 inch).
-type Rectangle [4]float32
+// A Rectangle defines a rectangle with two points.
+type Rectangle [4]Unit
 
 type resources struct {
 	ProcSet []Name

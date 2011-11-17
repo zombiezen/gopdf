@@ -11,21 +11,6 @@ import (
 	"os"
 )
 
-// Common page sizes (in typographical points)
-const (
-	USLetterWidth  = 612
-	USLetterHeight = 792
-
-	A4Width  = 11.690
-	A4Height = 8.268
-)
-
-// Common units
-const (
-	Inch = 72
-	Cm   = 28.35
-)
-
 // writeCommand writes a PDF graphics command.
 func writeCommand(w io.Writer, op string, args ...interface{}) os.Error {
 	for _, arg := range args {
@@ -73,7 +58,7 @@ func (canvas *Canvas) Size() Rectangle {
 }
 
 // SetSize changes the page's media box (the size of the physical medium).
-func (canvas *Canvas) SetSize(width, height float32) {
+func (canvas *Canvas) SetSize(width, height Unit) {
 	canvas.page.MediaBox = Rectangle{0, 0, width, height}
 }
 
@@ -107,20 +92,19 @@ func (canvas *Canvas) Stroke(p *Path) {
 	writeCommand(canvas.contents, "S")
 }
 
-// SetLineWidth changes the stroke width to the given value (in typographical
-// points).
-func (canvas *Canvas) SetLineWidth(w float32) {
+// SetLineWidth changes the stroke width to the given value.
+func (canvas *Canvas) SetLineWidth(w Unit) {
 	writeCommand(canvas.contents, "w", w)
 }
 
 // SetLineDash changes the line dash pattern in the current graphics state.
 // Examples:
 //
-//   c.SetLineDash(0, []float32{})     // solid line
-//   c.SetLineDash(0, []float32{3})    // 3 units on, 3 units off...
-//   c.SetLineDash(0, []float32{2, 1}) // 2 units on, 1 unit off...
-//   c.SetLineDash(1, []float32{2})    // 1 unit on, 2 units off, 2 units on...
-func (canvas *Canvas) SetLineDash(phase float32, dash []float32) {
+//   c.SetLineDash(0, []Unit{})     // solid line
+//   c.SetLineDash(0, []Unit{3})    // 3 units on, 3 units off...
+//   c.SetLineDash(0, []Unit{2, 1}) // 2 units on, 1 unit off...
+//   c.SetLineDash(1, []Unit{2})    // 1 unit on, 2 units off, 2 units on...
+func (canvas *Canvas) SetLineDash(phase Unit, dash []Unit) {
 	writeCommand(canvas.contents, "d", dash, phase)
 }
 
@@ -148,9 +132,8 @@ func (canvas *Canvas) Pop() {
 	writeCommand(canvas.contents, "Q")
 }
 
-// Translate moves the canvas's coordinates system by the given offset (in
-// typographical points).
-func (canvas *Canvas) Translate(x, y float32) {
+// Translate moves the canvas's coordinates system by the given offset.
+func (canvas *Canvas) Translate(x, y Unit) {
 	writeCommand(canvas.contents, "cm", 1, 0, 0, 1, x, y)
 }
 
@@ -190,27 +173,27 @@ func (canvas *Canvas) DrawText(text *Text) {
 }
 
 // DrawImage paints a raster image at the given location and scaled to the
-// given dimensions (in typographical points).  If you want to render the same
-// image multiple times in the same document, use DrawImageReference.
-func (canvas *Canvas) DrawImage(img image.Image, x, y, w, h float32) {
+// given dimensions.  If you want to render the same image multiple times in
+// the same document, use DrawImageReference.
+func (canvas *Canvas) DrawImage(img image.Image, x, y, w, h Unit) {
 	canvas.DrawImageReference(canvas.doc.AddImage(img), x, y, w, h)
 }
 
 // DrawImageReference paints the raster image referenced in the document at the
-// given location and scaled to the given dimensions (in typographical points).
-func (canvas *Canvas) DrawImageReference(ref Reference, x, y, w, h float32) {
+// given location and scaled to the given dimensions.
+func (canvas *Canvas) DrawImageReference(ref Reference, x, y, w, h Unit) {
 	name := canvas.nextImageName()
 	canvas.page.Resources.XObject[name] = ref
 
 	canvas.Push()
-	canvas.Transform(w, 0, 0, h, x, y)
+	canvas.Transform(float32(w), 0, 0, float32(h), float32(x), float32(y))
 	writeCommand(canvas.contents, "Do", name)
 	canvas.Pop()
 }
 
 // DrawLine paints a straight line from (x1, y1) to (x2, y2) using the current
 // stroke color and line width.
-func (canvas *Canvas) DrawLine(x1, y1, x2, y2 float32) {
+func (canvas *Canvas) DrawLine(x1, y1, x2, y2 Unit) {
 	var path Path
 	path.Move(x1, y1)
 	path.Line(x2, y2)
@@ -237,15 +220,13 @@ type Path struct {
 	buf bytes.Buffer
 }
 
-// Move begins a new subpath by moving the current point to the given location
-// (in typographical points).
-func (path *Path) Move(x, y float32) {
+// Move begins a new subpath by moving the current point to the given location.
+func (path *Path) Move(x, y Unit) {
 	writeCommand(&path.buf, "m", x, y)
 }
 
-// Line appends a line segment from the current point to the given location (in
-// typographical points).
-func (path *Path) Line(x, y float32) {
+// Line appends a line segment from the current point to the given location.
+func (path *Path) Line(x, y Unit) {
 	writeCommand(&path.buf, "l", x, y)
 }
 

@@ -3,10 +3,6 @@
 /*
 	Package pdf implements a Portable Document Format writer, as defined in ISO 32000-1.
 
-	Most all dimensional units in this package are in typographical points,
-	which are defined to be 1/72 of an inch.  If you want to use different
-	units, then you can scale the canvas.
-
 	An example of basic usage:
 
 		package main
