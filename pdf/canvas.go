@@ -179,6 +179,15 @@ func (canvas *Canvas) DrawImageReference(ref Reference, x, y, w, h float32) {
 	canvas.Pop()
 }
 
+// DrawLine paints a straight line from (x1, y1) to (x2, y2) using the current
+// stroke color and line width.
+func (canvas *Canvas) DrawLine(x1, y1, x2, y2 float32) {
+	var path Path
+	path.Move(x1, y1)
+	path.Line(x2, y2)
+	canvas.Stroke(&path)
+}
+
 const anonymousImageFormat = "__image%d__"
 
 func (canvas *Canvas) nextImageName() Name {
