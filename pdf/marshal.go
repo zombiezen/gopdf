@@ -4,7 +4,7 @@ package pdf
 
 import (
 	"bytes"
-	"os"
+	"errors"
 	"reflect"
 	"strconv"
 	"strings"
@@ -12,7 +12,7 @@ import (
 
 // A Marshaler can produce a PDF object.
 type Marshaler interface {
-	MarshalPDF() ([]byte, os.Error)
+	MarshalPDF() ([]byte, error)
 }
 
 // Marshal returns the PDF encoding of v.
@@ -20,7 +20,7 @@ type Marshaler interface {
 // If the value implements the Marshaler interface, then its MarshalPDF method
 // is called.  ints, strings, and floats will be marshalled according to the PDF
 // standard.
-func Marshal(v interface{}) ([]byte, os.Error) {
+func Marshal(v interface{}) ([]byte, error) {
 	state := new(marshalState)
 	if err := state.marshalValue(reflect.ValueOf(v)); err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ type marshalState struct {
 
 const marshalFloatPrec = 5
 
-func (state *marshalState) marshalValue(v reflect.Value) os.Error {
+func (state *marshalState) marshalValue(v reflect.Value) error {
 	if !v.IsValid() {
 		state.WriteString("null")
 		return nil
@@ -72,7 +72,7 @@ func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 		return state.marshalStruct(v)
 	}
 
-	return os.NewError("pdf: unsupported type: " + v.Type().String())
+	return errors.New("pdf: unsupported type: " + v.Type().String())
 }
 
 // quote escapes a string and returns a PDF string literal.
@@ -89,7 +89,7 @@ func quote(s string) string {
 	return "(" + r.Replace(s) + ")"
 }
 
-func (state *marshalState) marshalSlice(v reflect.Value) os.Error {
+func (state *marshalState) marshalSlice(v reflect.Value) error {
 	state.WriteString("[ ")
 	for i := 0; i < v.Len(); i++ {
 		if err := state.marshalValue(v.Index(i)); err != nil {
@@ -101,9 +101,9 @@ func (state *marshalState) marshalSlice(v reflect.Value) os.Error {
 	return nil
 }
 
-func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
+func (state *marshalState) marshalDictionary(v reflect.Value) error {
 	if v.Type().Key() != reflect.TypeOf(Name("")) {
-		return os.NewError("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
+		return errors.New("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
 	}
 
 	state.WriteString("<< ")
@@ -126,7 +126,7 @@ func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
 	return nil
 }
 
-func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
+func (state *marshalState) marshalStruct(v reflect.Value) error {
 	state.WriteString("<< ")
 	t := v.Type()
 	n := v.NumField()

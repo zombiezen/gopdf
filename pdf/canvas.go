@@ -8,11 +8,10 @@ import (
 	"image"
 	"io"
 	"math"
-	"os"
 )
 
 // writeCommand writes a PDF graphics command.
-func writeCommand(w io.Writer, op string, args ...interface{}) os.Error {
+func writeCommand(w io.Writer, op string, args ...interface{}) error {
 	for _, arg := range args {
 		if m, err := Marshal(arg); err == nil {
 			if _, err := w.Write(append(m, ' ')); err != nil {
@@ -48,7 +47,7 @@ func (canvas *Canvas) Document() *Document {
 
 // Close flushes the page's stream to the document.  This must be called once
 // drawing has completed or else the document will be inconsistent.
-func (canvas *Canvas) Close() os.Error {
+func (canvas *Canvas) Close() error {
 	return canvas.contents.Close()
 }
 

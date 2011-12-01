@@ -12,7 +12,7 @@ import (
 
 const suzanneBytes = 512 * 512 * 3
 
-func loadSuzanneRGBA() (*image.RGBA, os.Error) {
+func loadSuzanneRGBA() (*image.RGBA, error) {
 	f, err := os.Open("testdata/suzanne.bmp")
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func loadSuzanneRGBA() (*image.RGBA, os.Error) {
 	return img.(*image.RGBA), nil
 }
 
-func loadSuzanneYCbCr() (*ycbcr.YCbCr, os.Error) {
+func loadSuzanneYCbCr() (*ycbcr.YCbCr, error) {
 	f, err := os.Open("testdata/suzanne.jpg")
 	if err != nil {
 		return nil, err

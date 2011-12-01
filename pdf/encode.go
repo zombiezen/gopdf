@@ -5,7 +5,6 @@ package pdf
 import (
 	"fmt"
 	"io"
-	"os"
 )
 
 // Encoder writes the PDF file format structure.
@@ -46,7 +45,7 @@ const startxrefFormat = "startxref" + newline + "%d" + newline
 const eofString = "%%EOF" + newline
 
 // Encode writes an entire PDF document by marshalling the added objects.
-func (enc *Encoder) Encode(wr io.Writer) os.Error {
+func (enc *Encoder) Encode(wr io.Writer) error {
 	w := &offsetWriter{Writer: wr}
 	if err := enc.writeHeader(w); err != nil {
 		return err
@@ -71,12 +70,12 @@ func (enc *Encoder) Encode(wr io.Writer) os.Error {
 	return nil
 }
 
-func (enc *Encoder) writeHeader(w *offsetWriter) os.Error {
+func (enc *Encoder) writeHeader(w *offsetWriter) error {
 	_, err := io.WriteString(w, header)
 	return err
 }
 
-func (enc *Encoder) writeBody(w *offsetWriter) ([]int64, os.Error) {
+func (enc *Encoder) writeBody(w *offsetWriter) ([]int64, error) {
 	objectOffsets := make([]int64, len(enc.objects))
 	for i, obj := range enc.objects {
 		objectOffsets[i] = w.offset
@@ -94,7 +93,7 @@ func (enc *Encoder) writeBody(w *offsetWriter) ([]int64, os.Error) {
 	return objectOffsets, nil
 }
 
-func (enc *Encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) os.Error {
+func (enc *Encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) error {
 	if _, err := io.WriteString(w, crossReferenceSectionHeader); err != nil {
 		return err
 	}
@@ -112,7 +111,7 @@ func (enc *Encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) os.Er
 	return nil
 }
 
-func (enc *Encoder) writeTrailer(w *offsetWriter) os.Error {
+func (enc *Encoder) writeTrailer(w *offsetWriter) error {
 	if _, err := io.WriteString(w, trailerHeader); err != nil {
 		return err
 	}
@@ -133,12 +132,12 @@ func (enc *Encoder) writeTrailer(w *offsetWriter) os.Error {
 	return nil
 }
 
-func (enc *Encoder) writeStartxref(w *offsetWriter, tableOffset int64) os.Error {
+func (enc *Encoder) writeStartxref(w *offsetWriter, tableOffset int64) error {
 	_, err := fmt.Fprintf(w, startxrefFormat, tableOffset)
 	return err
 }
 
-func (enc *Encoder) writeEOF(w *offsetWriter) os.Error {
+func (enc *Encoder) writeEOF(w *offsetWriter) error {
 	_, err := io.WriteString(w, eofString)
 	return err
 }
@@ -149,7 +148,7 @@ type offsetWriter struct {
 	offset int64
 }
 
-func (w *offsetWriter) Write(p []byte) (n int, err os.Error) {
+func (w *offsetWriter) Write(p []byte) (n int, err error) {
 	n, err = w.Writer.Write(p)
 	w.offset += int64(n)
 	return

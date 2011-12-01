@@ -5,7 +5,6 @@ import (
 	"compress/lzw"
 	"compress/zlib"
 	"io"
-	"os"
 )
 
 const (
@@ -41,31 +40,31 @@ func newStream(filter Name) *stream {
 	return st
 }
 
-func (st *stream) ReadFrom(r io.Reader) (n int64, err os.Error) {
+func (st *stream) ReadFrom(r io.Reader) (n int64, err error) {
 	return io.Copy(st.writer, r)
 }
 
-func (st *stream) Write(p []byte) (n int, err os.Error) {
+func (st *stream) Write(p []byte) (n int, err error) {
 	return st.writer.Write(p)
 }
 
-func (st *stream) WriteByte(c byte) os.Error {
+func (st *stream) WriteByte(c byte) error {
 	_, err := st.writer.Write([]byte{c})
 	return err
 }
 
-func (st *stream) WriteString(s string) (n int, err os.Error) {
+func (st *stream) WriteString(s string) (n int, err error) {
 	return io.WriteString(st.writer, s)
 }
 
-func (st *stream) Close() os.Error {
+func (st *stream) Close() error {
 	if wc, ok := st.writer.(io.WriteCloser); ok {
 		return wc.Close()
 	}
 	return nil
 }
 
-func (st *stream) MarshalPDF() ([]byte, os.Error) {
+func (st *stream) MarshalPDF() ([]byte, error) {
 	return marshalStream(streamInfo{
 		Length: st.Len(),
 		Filter: st.filter,
@@ -80,7 +79,7 @@ const (
 // marshalStream encodes a generic stream.  The resulting data encodes the
 // given object and a sequence of bytes.  This function does not enforce any
 // rules about the object being encoded.
-func marshalStream(obj interface{}, data []byte) ([]byte, os.Error) {
+func marshalStream(obj interface{}, data []byte) ([]byte, error) {
 	mobj, err := Marshal(obj)
 	if err != nil {
 		return nil, err

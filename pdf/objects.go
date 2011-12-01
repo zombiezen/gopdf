@@ -4,7 +4,6 @@ package pdf
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 )
 
@@ -15,7 +14,7 @@ func (n Name) String() string {
 	return string(n)
 }
 
-func (n Name) MarshalPDF() ([]byte, os.Error) {
+func (n Name) MarshalPDF() ([]byte, error) {
 	// TODO: escape characters
 	return []byte("/" + n), nil
 }
@@ -30,7 +29,7 @@ const (
 	objectEnd   = " endobj"
 )
 
-func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
+func (obj indirectObject) MarshalPDF() ([]byte, error) {
 	data, err := Marshal(obj.Object)
 	if err != nil {
 		return nil, err
@@ -53,6 +52,6 @@ type Reference struct {
 	Generation uint
 }
 
-func (ref Reference) MarshalPDF() ([]byte, os.Error) {
+func (ref Reference) MarshalPDF() ([]byte, error) {
 	return []byte(fmt.Sprintf("%d %d R", ref.Number, ref.Generation)), nil
 }
