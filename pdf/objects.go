@@ -38,12 +38,12 @@ func (obj indirectObject) MarshalPDF() ([]byte, os.Error) {
 
 	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
 	result := make([]byte, 0, len(mn)+1+len(mg)+len(objectBegin)+len(data)+len(objectEnd))
-	result = append(result, mn...)
+	result = append(result, []byte(mn)...)
 	result = append(result, ' ')
-	result = append(result, mg...)
-	result = append(result, objectBegin...)
+	result = append(result, []byte(mg)...)
+	result = append(result, []byte(objectBegin)...)
 	result = append(result, data...)
-	result = append(result, objectEnd...)
+	result = append(result, []byte(objectEnd)...)
 	return result, nil
 }
 

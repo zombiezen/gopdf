@@ -37,7 +37,7 @@ func TestText(t *testing.T) {
 }
 
 func floatEq(a, b, epsilon float64) bool {
-	return math.Abs(a-b) < epsilon
+	return math.Fabs(a-b) < epsilon
 }
 
 func TestTextX(t *testing.T) {

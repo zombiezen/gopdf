@@ -77,16 +77,28 @@ func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 
 // quote escapes a string and returns a PDF string literal.
 func quote(s string) string {
-	r := strings.NewReplacer(
-		"\r", `\r`,
-		"\t", `\t`,
-		"\b", `\b`,
-		"\f", `\f`,
-		"(", `\(`,
-		")", `\)`,
-		`\`, `\\`,
-	)
-	return "(" + r.Replace(s) + ")"
+	runes := make([]int, 0, len(s))
+	for _, r := range s {
+		switch r {
+		case '\r':
+			runes = append(runes, '\\', 'r')
+		case '\t':
+			runes = append(runes, '\\', 't')
+		case '\b':
+			runes = append(runes, '\\', 'b')
+		case '\f':
+			runes = append(runes, '\\', 'f')
+		case '(':
+			runes = append(runes, '\\', '(')
+		case ')':
+			runes = append(runes, '\\', ')')
+		case '\\':
+			runes = append(runes, '\\', '\\')
+		default:
+			runes = append(runes, r)
+		}
+	}
+	return "(" + string(runes) + ")"
 }
 
 func (state *marshalState) marshalSlice(v reflect.Value) os.Error {
