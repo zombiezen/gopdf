@@ -13,8 +13,8 @@ h
 
 func TestPath(t *testing.T) {
 	path := new(Path)
-	path.Move(12, 34)
-	path.Line(-56, 78)
+	path.Move(Point{12, 34})
+	path.Line(Point{-56, 78})
 	path.Close()
 
 	if path.buf.String() != pathExpectedOutput {
