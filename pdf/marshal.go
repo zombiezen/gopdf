@@ -11,7 +11,7 @@ import (
 
 // A marshaler can produce a PDF object.
 type marshaler interface {
-	marshalPDF() ([]byte, os.Error)
+	marshalPDF(dst []byte) ([]byte, os.Error)
 }
 
 // marshal returns the PDF encoding of v.

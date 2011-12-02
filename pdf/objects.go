@@ -15,7 +15,7 @@ func (n name) String() string {
 	return string(n)
 }
 
-func (n name) marshalPDF() ([]byte, os.Error) {
+func (n name) marshalPDF(dst []byte) ([]byte, os.Error) {
 	// TODO: escape characters
 	dst = append(dst, '/')
 	return append(dst, []byte(n)...), nil
@@ -31,7 +31,7 @@ const (
 	objectEnd   = " endobj"
 )
 
-func (obj indirectObject) marshalPDF() ([]byte, os.Error) {
+func (obj indirectObject) marshalPDF(dst []byte) ([]byte, os.Error) {
 	var err os.Error
 	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
 	dst = append(dst, []byte(mn)...)
