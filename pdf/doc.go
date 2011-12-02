@@ -19,8 +19,8 @@
 			canvas.Translate(100, 100)
 
 			path := new(pdf.Path)
-			path.Move(0, 0)
-			path.Line(100, 0)
+			path.Move(pdf.Point{0, 0})
+			path.Line(pdf.Point{100, 0})
 			canvas.Stroke(path)
 
 			text := new(pdf.Text)

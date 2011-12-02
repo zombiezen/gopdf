@@ -57,8 +57,8 @@ func New() *Document {
 func (doc *Document) NewPage(width, height Unit) *Canvas {
 	page := &pageDict{
 		Type:     pageType,
-		MediaBox: Rectangle{0, 0, width, height},
-		CropBox:  Rectangle{0, 0, width, height},
+		MediaBox: Rectangle{Point{0, 0}, Point{width, height}},
+		CropBox:  Rectangle{Point{0, 0}, Point{width, height}},
 		Resources: resources{
 			ProcSet: []Name{pdfProcSet, textProcSet, imageCProcSet},
 			Font:    make(map[Name]interface{}),
@@ -175,8 +175,25 @@ type pageDict struct {
 	Contents  Reference
 }
 
+// Point is a 2D point.
+type Point struct {
+	X, Y Unit
+}
+
 // A Rectangle defines a rectangle with two points.
-type Rectangle [4]Unit
+type Rectangle struct {
+	Min, Max Point
+}
+
+// Dx returns the rectangle's width.
+func (r Rectangle) Dx() Unit {
+	return r.Max.X - r.Min.X
+}
+
+// Dy returns the rectangle's height.
+func (r Rectangle) Dy() Unit {
+	return r.Max.Y - r.Min.Y
+}
 
 type resources struct {
 	ProcSet []Name
