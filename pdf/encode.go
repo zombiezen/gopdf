@@ -78,15 +78,13 @@ func (enc *encoder) writeHeader(w *offsetWriter) error {
 func (enc *encoder) writeBody(w *offsetWriter) ([]int64, error) {
 	objectOffsets := make([]int64, len(enc.objects))
 	for i, obj := range enc.objects {
+		// TODO: Use same buffer for writing across objects
 		objectOffsets[i] = w.offset
-		data, err := marshal(indirectObject{Reference{uint(i + 1), 0}, obj})
+		data, err := marshal(nil, indirectObject{Reference{uint(i + 1), 0}, obj})
 		if err != nil {
 			return nil, err
 		}
-		if _, err = w.Write(data); err != nil {
-			return nil, err
-		}
-		if _, err = io.WriteString(w, newline); err != nil {
+		if _, err = w.Write(append(data, newline...)); err != nil {
 			return nil, err
 		}
 	}
@@ -112,24 +110,20 @@ func (enc *encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) error
 }
 
 func (enc *encoder) writeTrailer(w *offsetWriter) error {
-	if _, err := io.WriteString(w, trailerHeader); err != nil {
-		return err
-	}
-	trailerDict := trailer{
+	var err error
+	dict := trailer{
 		Size: len(enc.objects) + 1,
 		Root: enc.root,
 	}
-	trailerData, err := marshal(trailerDict)
-	if err != nil {
+	data := make([]byte, 0, len(trailerHeader)+len(newline))
+	data = append(data, trailerHeader...)
+	if data, err = marshal(data, dict); err != nil {
 		return err
 	}
-	if _, err := w.Write(trailerData); err != nil {
-		return err
-	}
-	if _, err := io.WriteString(w, newline); err != nil {
-		return err
-	}
-	return nil
+	data = append(data, newline...)
+
+	_, err = w.Write(data)
+	return err
 }
 
 func (enc *encoder) writeStartxref(w *offsetWriter, tableOffset int64) error {

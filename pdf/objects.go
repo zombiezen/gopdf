@@ -14,9 +14,10 @@ func (n name) String() string {
 	return string(n)
 }
 
-func (n name) marshalPDF() ([]byte, error) {
+func (n name) marshalPDF(dst []byte) ([]byte, error) {
 	// TODO: escape characters
-	return []byte("/" + n), nil
+	dst = append(dst, '/')
+	return append(dst, []byte(n)...), nil
 }
 
 type indirectObject struct {
@@ -29,21 +30,18 @@ const (
 	objectEnd   = " endobj"
 )
 
-func (obj indirectObject) marshalPDF() ([]byte, error) {
-	data, err := marshal(obj.Object)
-	if err != nil {
+func (obj indirectObject) marshalPDF(dst []byte) ([]byte, error) {
+	var err error
+	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
+	dst = append(dst, mn...)
+	dst = append(dst, ' ')
+	dst = append(dst, mg...)
+	dst = append(dst, objectBegin...)
+	if dst, err = marshal(dst, obj.Object); err != nil {
 		return nil, err
 	}
-
-	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
-	result := make([]byte, 0, len(mn)+1+len(mg)+len(objectBegin)+len(data)+len(objectEnd))
-	result = append(result, mn...)
-	result = append(result, ' ')
-	result = append(result, mg...)
-	result = append(result, objectBegin...)
-	result = append(result, data...)
-	result = append(result, objectEnd...)
-	return result, nil
+	dst = append(dst, objectEnd...)
+	return dst, nil
 }
 
 // Reference holds a PDF indirect reference.
@@ -52,6 +50,6 @@ type Reference struct {
 	Generation uint
 }
 
-func (ref Reference) marshalPDF() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d %d R", ref.Number, ref.Generation)), nil
+func (ref Reference) marshalPDF(dst []byte) ([]byte, error) {
+	return append(dst, fmt.Sprintf("%d %d R", ref.Number, ref.Generation)...), nil
 }

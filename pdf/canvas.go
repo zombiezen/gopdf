@@ -13,7 +13,8 @@ import (
 // writeCommand writes a PDF graphics command.
 func writeCommand(w io.Writer, op string, args ...interface{}) error {
 	for _, arg := range args {
-		if m, err := marshal(arg); err == nil {
+		// TODO: Use the same buffer for all arguments
+		if m, err := marshal(nil, arg); err == nil {
 			if _, err := w.Write(append(m, ' ')); err != nil {
 				return err
 			}

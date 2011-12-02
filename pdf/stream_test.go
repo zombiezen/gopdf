@@ -45,7 +45,7 @@ func TestFlateStream(t *testing.T) {
 const expectedMarshalStreamOutput = "<< /Length 15 >> stream\r\n" + streamTestString + "\r\nendstream"
 
 func TestMarshalStream(t *testing.T) {
-	b, err := marshalStream(streamInfo{Length: len(streamTestString)}, []byte(streamTestString))
+	b, err := marshalStream(nil, streamInfo{Length: len(streamTestString)}, []byte(streamTestString))
 	if err == nil {
 		if string(b) != expectedMarshalStreamOutput {
 			t.Errorf("marshalStream(...) != %q (got %q)", expectedMarshalStreamOutput, b)

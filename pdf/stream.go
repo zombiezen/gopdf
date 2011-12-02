@@ -64,8 +64,8 @@ func (st *stream) Close() error {
 	return nil
 }
 
-func (st *stream) marshalPDF() ([]byte, error) {
-	return marshalStream(streamInfo{
+func (st *stream) marshalPDF(dst []byte) ([]byte, error) {
+	return marshalStream(dst, streamInfo{
 		Length: st.Len(),
 		Filter: st.filter,
 	}, st.Bytes())
@@ -79,16 +79,13 @@ const (
 // marshalStream encodes a generic stream.  The resulting data encodes the
 // given object and a sequence of bytes.  This function does not enforce any
 // rules about the object being encoded.
-func marshalStream(obj interface{}, data []byte) ([]byte, error) {
-	mobj, err := marshal(obj)
-	if err != nil {
+func marshalStream(dst []byte, obj interface{}, data []byte) ([]byte, error) {
+	var err error
+	if dst, err = marshal(dst, obj); err != nil {
 		return nil, err
 	}
-
-	b := make([]byte, 0, len(mobj)+len(streamBegin)+len(data)+len(streamEnd))
-	b = append(b, mobj...)
-	b = append(b, []byte(streamBegin)...)
-	b = append(b, data...)
-	b = append(b, []byte(streamEnd)...)
-	return b, nil
+	dst = append(dst, streamBegin...)
+	dst = append(dst, data...)
+	dst = append(dst, streamEnd...)
+	return dst, nil
 }
