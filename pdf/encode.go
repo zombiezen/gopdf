@@ -7,10 +7,10 @@ import (
 	"io"
 )
 
-// Encoder writes the PDF file format structure.
-type Encoder struct {
+// encoder writes the PDF file format structure.
+type encoder struct {
 	objects []interface{}
-	Root    Reference
+	root    Reference
 }
 
 type trailer struct {
@@ -18,9 +18,9 @@ type trailer struct {
 	Root Reference
 }
 
-// Add appends an object to the file.  The object is marshalled only when an
+// add appends an object to the file.  The object is marshalled only when an
 // encoding is requested.
-func (enc *Encoder) Add(v interface{}) Reference {
+func (enc *encoder) add(v interface{}) Reference {
 	enc.objects = append(enc.objects, v)
 	return Reference{uint(len(enc.objects)), 0}
 }
@@ -44,8 +44,8 @@ const startxrefFormat = "startxref" + newline + "%d" + newline
 
 const eofString = "%%EOF" + newline
 
-// Encode writes an entire PDF document by marshalling the added objects.
-func (enc *Encoder) Encode(wr io.Writer) error {
+// encode writes an entire PDF document by marshalling the added objects.
+func (enc *encoder) encode(wr io.Writer) error {
 	w := &offsetWriter{Writer: wr}
 	if err := enc.writeHeader(w); err != nil {
 		return err
@@ -70,16 +70,16 @@ func (enc *Encoder) Encode(wr io.Writer) error {
 	return nil
 }
 
-func (enc *Encoder) writeHeader(w *offsetWriter) error {
+func (enc *encoder) writeHeader(w *offsetWriter) error {
 	_, err := io.WriteString(w, header)
 	return err
 }
 
-func (enc *Encoder) writeBody(w *offsetWriter) ([]int64, error) {
+func (enc *encoder) writeBody(w *offsetWriter) ([]int64, error) {
 	objectOffsets := make([]int64, len(enc.objects))
 	for i, obj := range enc.objects {
 		objectOffsets[i] = w.offset
-		data, err := Marshal(indirectObject{Reference{uint(i + 1), 0}, obj})
+		data, err := marshal(indirectObject{Reference{uint(i + 1), 0}, obj})
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func (enc *Encoder) writeBody(w *offsetWriter) ([]int64, error) {
 	return objectOffsets, nil
 }
 
-func (enc *Encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) error {
+func (enc *encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) error {
 	if _, err := io.WriteString(w, crossReferenceSectionHeader); err != nil {
 		return err
 	}
@@ -111,15 +111,15 @@ func (enc *Encoder) writeXrefTable(w *offsetWriter, objectOffsets []int64) error
 	return nil
 }
 
-func (enc *Encoder) writeTrailer(w *offsetWriter) error {
+func (enc *encoder) writeTrailer(w *offsetWriter) error {
 	if _, err := io.WriteString(w, trailerHeader); err != nil {
 		return err
 	}
 	trailerDict := trailer{
 		Size: len(enc.objects) + 1,
-		Root: enc.Root,
+		Root: enc.root,
 	}
-	trailerData, err := Marshal(trailerDict)
+	trailerData, err := marshal(trailerDict)
 	if err != nil {
 		return err
 	}
@@ -132,12 +132,12 @@ func (enc *Encoder) writeTrailer(w *offsetWriter) error {
 	return nil
 }
 
-func (enc *Encoder) writeStartxref(w *offsetWriter, tableOffset int64) error {
+func (enc *encoder) writeStartxref(w *offsetWriter, tableOffset int64) error {
 	_, err := fmt.Fprintf(w, startxrefFormat, tableOffset)
 	return err
 }
 
-func (enc *Encoder) writeEOF(w *offsetWriter) error {
+func (enc *encoder) writeEOF(w *offsetWriter) error {
 	_, err := io.WriteString(w, eofString)
 	return err
 }

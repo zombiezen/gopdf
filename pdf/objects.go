@@ -14,7 +14,7 @@ func (n Name) String() string {
 	return string(n)
 }
 
-func (n Name) MarshalPDF() ([]byte, error) {
+func (n Name) marshalPDF() ([]byte, error) {
 	// TODO: escape characters
 	return []byte("/" + n), nil
 }
@@ -29,8 +29,8 @@ const (
 	objectEnd   = " endobj"
 )
 
-func (obj indirectObject) MarshalPDF() ([]byte, error) {
-	data, err := Marshal(obj.Object)
+func (obj indirectObject) marshalPDF() ([]byte, error) {
+	data, err := marshal(obj.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +52,6 @@ type Reference struct {
 	Generation uint
 }
 
-func (ref Reference) MarshalPDF() ([]byte, error) {
+func (ref Reference) marshalPDF() ([]byte, error) {
 	return []byte(fmt.Sprintf("%d %d R", ref.Number, ref.Generation)), nil
 }

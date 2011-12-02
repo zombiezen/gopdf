@@ -64,7 +64,7 @@ func (st *stream) Close() error {
 	return nil
 }
 
-func (st *stream) MarshalPDF() ([]byte, error) {
+func (st *stream) marshalPDF() ([]byte, error) {
 	return marshalStream(streamInfo{
 		Length: st.Len(),
 		Filter: st.filter,
@@ -80,7 +80,7 @@ const (
 // given object and a sequence of bytes.  This function does not enforce any
 // rules about the object being encoded.
 func marshalStream(obj interface{}, data []byte) ([]byte, error) {
-	mobj, err := Marshal(obj)
+	mobj, err := marshal(obj)
 	if err != nil {
 		return nil, err
 	}
