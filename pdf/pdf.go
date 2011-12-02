@@ -17,20 +17,20 @@ func (unit Unit) String() string {
 	return strconv.Ftoa32(float32(unit), 'f', marshalFloatPrec)
 }
 
-// Common page sizes
-const (
-	USLetterWidth  Unit = 612
-	USLetterHeight Unit = 792
-
-	A4Width  Unit = 11.690
-	A4Height Unit = 8.268
-)
-
 // Common unit scales
 const (
 	Pt   Unit = 1
 	Inch Unit = 72
 	Cm   Unit = 28.35
+)
+
+// Common page sizes
+const (
+	USLetterWidth  Unit = 8.5 * Inch
+	USLetterHeight Unit = 11.0 * Inch
+
+	A4Width  Unit = 21.0 * Cm
+	A4Height Unit = 29.7 * Cm
 )
 
 // Document provides a high-level drawing interface for the PDF format.
