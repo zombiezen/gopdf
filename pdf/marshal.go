@@ -3,14 +3,13 @@
 package pdf
 
 import (
-	"bytes"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-// A Marshaler can produce a PDF object.
+// A marshaler can produce a PDF object.
 type marshaler interface {
 	marshalPDF() ([]byte, os.Error)
 }
@@ -20,47 +19,51 @@ type marshaler interface {
 // If the value implements the marshaler interface, then its marshalPDF method
 // is called.  ints, strings, and floats will be marshalled according to the PDF
 // standard.
-func marshal(v interface{}) ([]byte, os.Error) {
-	state := new(marshalState)
+func marshal(dst []byte, v interface{}) ([]byte, os.Error) {
+	state := marshalState{dst}
 	if err := state.marshalValue(reflect.ValueOf(v)); err != nil {
 		return nil, err
 	}
-	return state.Bytes(), nil
+	return state.data, nil
 }
 
 type marshalState struct {
-	bytes.Buffer
+	data []byte
 }
 
 const marshalFloatPrec = 5
 
+func (state *marshalState) writeString(s string) {
+	state.data = append(state.data, s...)
+}
+
 func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 	if !v.IsValid() {
-		state.WriteString("null")
+		state.writeString("null")
 		return nil
 	}
 
 	if m, ok := v.Interface().(marshaler); ok {
-		b, err := m.marshalPDF()
+		slice, err := m.marshalPDF(state.data)
 		if err != nil {
 			return err
 		}
-		state.Write(b)
+		state.data = slice
 		return nil
 	}
 
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		state.WriteString(strconv.Itoa64(v.Int()))
+		state.writeString(strconv.Itoa64(v.Int()))
 		return nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		state.WriteString(strconv.Uitoa64(v.Uint()))
+		state.writeString(strconv.Uitoa64(v.Uint()))
 		return nil
 	case reflect.Float32, reflect.Float64:
-		state.WriteString(strconv.Ftoa64(v.Float(), 'f', marshalFloatPrec))
+		state.writeString(strconv.Ftoa64(v.Float(), 'f', marshalFloatPrec))
 		return nil
 	case reflect.String:
-		state.WriteString(quote(v.String()))
+		state.writeString(quote(v.String()))
 		return nil
 	case reflect.Ptr, reflect.Interface:
 		return state.marshalValue(v.Elem())
@@ -90,14 +93,14 @@ func quote(s string) string {
 }
 
 func (state *marshalState) marshalSlice(v reflect.Value) os.Error {
-	state.WriteString("[ ")
+	state.writeString("[ ")
 	for i := 0; i < v.Len(); i++ {
 		if err := state.marshalValue(v.Index(i)); err != nil {
 			return err
 		}
-		state.WriteByte(' ')
+		state.writeString(" ")
 	}
-	state.WriteString("]")
+	state.writeString("]")
 	return nil
 }
 
@@ -106,28 +109,16 @@ func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
 		return os.NewError("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
 	}
 
-	state.WriteString("<< ")
+	state.writeString("<< ")
 	for _, k := range v.MapKeys() {
-		// Marshal key
-		mk, err := k.Interface().(name).marshalPDF()
-		if err != nil {
-			return err
-		}
-		state.Write(mk)
-		state.WriteByte(' ')
-
-		// Marshal value
-		if err := state.marshalValue(v.MapIndex(k)); err != nil {
-			return err
-		}
-		state.WriteByte(' ')
+		state.marshalKeyValue(k.Interface().(name), v.MapIndex(k))
 	}
-	state.WriteString(">>")
+	state.writeString(">>")
 	return nil
 }
 
 func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
-	state.WriteString("<< ")
+	state.writeString("<< ")
 	t := v.Type()
 	n := v.NumField()
 	for i := 0; i < n; i++ {
@@ -154,21 +145,25 @@ func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
 			continue
 		}
 
-		// Marshal key
-		mk, err := name(tag).marshalPDF()
-		if err != nil {
-			return err
-		}
-		state.Write(mk)
-		state.WriteByte(' ')
-
-		// Marshal value
-		if err := state.marshalValue(fieldValue); err != nil {
-			return err
-		}
-		state.WriteByte(' ')
+		state.marshalKeyValue(name(tag), fieldValue)
 	}
-	state.WriteString(">>")
+	state.writeString(">>")
+	return nil
+}
+
+func (state *marshalState) marshalKeyValue(k name, v reflect.Value) os.Error {
+	slice, err := k.marshalPDF(state.data)
+	if err != nil {
+		return err
+	}
+	state.data = slice
+	state.writeString(" ")
+
+	if err := state.marshalValue(v); err != nil {
+		return err
+	}
+	state.writeString(" ")
+
 	return nil
 }
 
