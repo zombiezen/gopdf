@@ -9,10 +9,10 @@ import (
 // Text is a PDF text object.  The zero value is an empty text object.
 type Text struct {
 	buf   bytes.Buffer
-	fonts map[Name]bool
+	fonts map[name]bool
 
 	x, y        Unit
-	currFont    Name
+	currFont    name
 	currSize    Unit
 	currLeading Unit
 }
@@ -27,16 +27,15 @@ func (text *Text) Text(s string) {
 
 const defaultLeadingScalar = 1.2
 
-// SetFont changes the current font to either a standard font or a font
-// declared in the canvas.  This also changes the leading to 1.2 times the
-// font size.
-func (text *Text) SetFont(name Name, size Unit) {
+// SetFont changes the current font to a standard font.  This also changes the
+// leading to 1.2 times the font size.
+func (text *Text) SetFont(fontName string, size Unit) {
 	if text.fonts == nil {
-		text.fonts = make(map[Name]bool)
+		text.fonts = make(map[name]bool)
 	}
-	text.fonts[name] = true
-	text.currFont, text.currSize = name, size
-	writeCommand(&text.buf, "Tf", name, size)
+	text.fonts[name(fontName)] = true
+	text.currFont, text.currSize = name(fontName), size
+	writeCommand(&text.buf, "Tf", name(fontName), size)
 	text.SetLeading(size * defaultLeadingScalar)
 }
 
@@ -74,27 +73,27 @@ func (text *Text) Y() Unit {
 
 // Standard 14 fonts
 const (
-	Courier            Name = "Courier"
-	CourierBold        Name = "Courier-Bold"
-	CourierOblique     Name = "Courier-Oblique"
-	CourierBoldOblique Name = "Courier-BoldOblique"
+	Courier            = "Courier"
+	CourierBold        = "Courier-Bold"
+	CourierOblique     = "Courier-Oblique"
+	CourierBoldOblique = "Courier-BoldOblique"
 
-	Helvetica            Name = "Helvetica"
-	HelveticaBold        Name = "Helvetica-Bold"
-	HelveticaOblique     Name = "Helvetica-Oblique"
-	HelveticaBoldOblique Name = "Helvetica-BoldOblique"
+	Helvetica            = "Helvetica"
+	HelveticaBold        = "Helvetica-Bold"
+	HelveticaOblique     = "Helvetica-Oblique"
+	HelveticaBoldOblique = "Helvetica-BoldOblique"
 
-	Symbol Name = "Symbol"
+	Symbol = "Symbol"
 
-	Times           Name = "Times-Roman"
-	TimesBold       Name = "Times-Bold"
-	TimesItalic     Name = "Times-Italic"
-	TimesBoldItalic Name = "Times-BoldItalic"
+	Times           = "Times-Roman"
+	TimesBold       = "Times-Bold"
+	TimesItalic     = "Times-Italic"
+	TimesBoldItalic = "Times-BoldItalic"
 
-	ZapfDingbats Name = "ZapfDingbats"
+	ZapfDingbats = "ZapfDingbats"
 )
 
-func getFontWidths(fontName Name) []uint16 {
+func getFontWidths(fontName name) []uint16 {
 	switch fontName {
 	case Courier:
 		return courierWidths
