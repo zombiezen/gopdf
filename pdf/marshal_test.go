@@ -61,7 +61,7 @@ var marshalTests = []marshalTest{
 
 func TestMarshal(t *testing.T) {
 	for i, tt := range marshalTests {
-		result, err := Marshal(tt.Value)
+		result, err := marshal(tt.Value)
 		switch {
 		case err != nil:
 			t.Errorf("%d. Marshal(%#v) error: %v", i, tt.Value, err)
