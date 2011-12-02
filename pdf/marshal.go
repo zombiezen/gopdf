@@ -34,7 +34,7 @@ type marshalState struct {
 const marshalFloatPrec = 5
 
 func (state *marshalState) writeString(s string) {
-	state.data = append(state.data, s...)
+	state.data = append(state.data, []byte(s)...)
 }
 
 func (state *marshalState) marshalValue(v reflect.Value) os.Error {

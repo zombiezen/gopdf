@@ -51,6 +51,6 @@ type Reference struct {
 	Generation uint
 }
 
-func (ref Reference) marshalPDF() ([]byte, os.Error) {
+func (ref Reference) marshalPDF(dst []byte) ([]byte, os.Error) {
 	return append(dst, []byte(fmt.Sprintf("%d %d R", ref.Number, ref.Generation))...), nil
 }
