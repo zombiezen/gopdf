@@ -42,7 +42,7 @@ func newImageStream(filter name, w, h int) *imageStream {
 	}
 }
 
-func (st *imageStream) MarshalPDF() ([]byte, os.Error) {
+func (st *imageStream) marshalPDF() ([]byte, os.Error) {
 	return marshalStream(imageStreamInfo{
 		Type:             xobjectType,
 		Subtype:          imageSubtype,
