@@ -11,16 +11,16 @@ import (
 )
 
 // A Marshaler can produce a PDF object.
-type Marshaler interface {
-	MarshalPDF() ([]byte, os.Error)
+type marshaler interface {
+	marshalPDF() ([]byte, os.Error)
 }
 
-// Marshal returns the PDF encoding of v.
+// marshal returns the PDF encoding of v.
 //
-// If the value implements the Marshaler interface, then its MarshalPDF method
+// If the value implements the marshaler interface, then its marshalPDF method
 // is called.  ints, strings, and floats will be marshalled according to the PDF
 // standard.
-func Marshal(v interface{}) ([]byte, os.Error) {
+func marshal(v interface{}) ([]byte, os.Error) {
 	state := new(marshalState)
 	if err := state.marshalValue(reflect.ValueOf(v)); err != nil {
 		return nil, err
@@ -40,8 +40,8 @@ func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 		return nil
 	}
 
-	if m, ok := v.Interface().(Marshaler); ok {
-		b, err := m.MarshalPDF()
+	if m, ok := v.Interface().(marshaler); ok {
+		b, err := m.marshalPDF()
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
 	state.WriteString("<< ")
 	for _, k := range v.MapKeys() {
 		// Marshal key
-		mk, err := k.Interface().(Name).MarshalPDF()
+		mk, err := k.Interface().(Name).marshalPDF()
 		if err != nil {
 			return err
 		}
@@ -167,7 +167,7 @@ func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
 		}
 
 		// Marshal key
-		mk, err := Name(tag).MarshalPDF()
+		mk, err := Name(tag).marshalPDF()
 		if err != nil {
 			return err
 		}

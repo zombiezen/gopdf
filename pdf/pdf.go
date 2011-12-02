@@ -36,7 +36,7 @@ const (
 
 // Document provides a high-level drawing interface for the PDF format.
 type Document struct {
-	Encoder
+	encoder
 	catalog *catalog
 	pages   []indirectObject
 	fonts   map[Name]Reference
@@ -48,7 +48,7 @@ func New() *Document {
 	doc.catalog = &catalog{
 		Type: catalogType,
 	}
-	doc.Root = doc.Add(doc.catalog)
+	doc.root = doc.add(doc.catalog)
 	doc.fonts = make(map[Name]Reference, 14)
 	return doc
 }
@@ -65,11 +65,11 @@ func (doc *Document) NewPage(width, height Unit) *Canvas {
 			XObject: make(map[Name]interface{}),
 		},
 	}
-	pageRef := doc.Add(page)
+	pageRef := doc.add(page)
 	doc.pages = append(doc.pages, indirectObject{pageRef, page})
 
 	stream := newStream(streamFlateDecode)
-	page.Contents = doc.Add(stream)
+	page.Contents = doc.add(stream)
 
 	return &Canvas{
 		doc:      doc,
@@ -88,7 +88,7 @@ func (doc *Document) StandardFont(name Name) Reference {
 	}
 
 	// TODO: check name is standard?
-	ref := doc.Add(standardFontDict{
+	ref := doc.add(standardFontDict{
 		Type:     fontType,
 		Subtype:  fontType1Subtype,
 		BaseFont: name,
@@ -113,7 +113,7 @@ func (doc *Document) AddImage(img image.Image) Reference {
 	default:
 		encodeImageStream(st, i)
 	}
-	return doc.Add(st)
+	return doc.add(st)
 }
 
 // Encode writes the document to a writer in the PDF format.
@@ -122,14 +122,14 @@ func (doc *Document) Encode(w io.Writer) os.Error {
 		Type:  pageNodeType,
 		Count: len(doc.pages),
 	}
-	doc.catalog.Pages = doc.Add(pageRoot)
+	doc.catalog.Pages = doc.add(pageRoot)
 	for _, p := range doc.pages {
 		page := p.Object.(*pageDict)
 		page.Parent = doc.catalog.Pages
 		pageRoot.Kids = append(pageRoot.Kids, p.Reference)
 	}
 
-	return doc.Encoder.Encode(w)
+	return doc.encoder.encode(w)
 }
 
 // PDF object types
