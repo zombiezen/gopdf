@@ -13,7 +13,7 @@ type marshalTest struct {
 
 type fooStruct struct {
 	Size    int64
-	Params  map[Name]string
+	Params  map[name]string
 	NotHere string  `pdf:"-"`
 	Rename  float64 `pdf:"Pi"`
 	TheVoid []int   `pdf:",omitempty"`
@@ -29,18 +29,18 @@ var marshalTests = []marshalTest{
 	{int(-321), "-321"},
 	{float64(-3.141599), "-3.14160"},
 	{float64(1e9), "1000000000.00000"},
-	{Name(""), "/"},
-	{Name("foo"), "/foo"},
+	{name(""), "/"},
+	{name("foo"), "/foo"},
 	{[]interface{}{}, `[ ]`},
 	{[]string{"foo", "(parens)"}, `[ (foo) (\(parens\)) ]`},
-	{map[Name]string{}, `<< >>`},
-	{map[Name]string{Name("foo"): "bar"}, `<< /foo (bar) >>`},
+	{map[name]string{}, `<< >>`},
+	{map[name]string{name("foo"): "bar"}, `<< /foo (bar) >>`},
 	{indirectObject{Reference{42, 0}, "foo"}, `42 0 obj (foo) endobj`},
 	{Reference{42, 0}, `42 0 R`},
 	{
 		fooStruct{
 			Size:    42,
-			Params:  map[Name]string{Name("this"): "that"},
+			Params:  map[name]string{name("this"): "that"},
 			NotHere: "XXX",
 			Rename:  3.141592,
 			TheVoid: []int{1, 2, 3},
@@ -50,7 +50,7 @@ var marshalTests = []marshalTest{
 	{
 		fooStruct{
 			Size:    42,
-			Params:  map[Name]string{Name("this"): "that"},
+			Params:  map[name]string{name("this"): "that"},
 			NotHere: "XXX",
 			Rename:  3.141592,
 			TheVoid: nil,

@@ -39,7 +39,7 @@ type Document struct {
 	encoder
 	catalog *catalog
 	pages   []indirectObject
-	fonts   map[Name]Reference
+	fonts   map[name]Reference
 }
 
 // New creates a new document with no pages.
@@ -49,7 +49,7 @@ func New() *Document {
 		Type: catalogType,
 	}
 	doc.root = doc.add(doc.catalog)
-	doc.fonts = make(map[Name]Reference, 14)
+	doc.fonts = make(map[name]Reference, 14)
 	return doc
 }
 
@@ -60,9 +60,9 @@ func (doc *Document) NewPage(width, height Unit) *Canvas {
 		MediaBox: Rectangle{Point{0, 0}, Point{width, height}},
 		CropBox:  Rectangle{Point{0, 0}, Point{width, height}},
 		Resources: resources{
-			ProcSet: []Name{pdfProcSet, textProcSet, imageCProcSet},
-			Font:    make(map[Name]interface{}),
-			XObject: make(map[Name]interface{}),
+			ProcSet: []name{pdfProcSet, textProcSet, imageCProcSet},
+			Font:    make(map[name]interface{}),
+			XObject: make(map[name]interface{}),
 		},
 	}
 	pageRef := doc.add(page)
@@ -79,11 +79,11 @@ func (doc *Document) NewPage(width, height Unit) *Canvas {
 	}
 }
 
-// StandardFont returns a reference to a standard font dictionary.  If there is
+// standardFont returns a reference to a standard font dictionary.  If there is
 // no font dictionary for the font in the document yet, it is added
 // automatically.
-func (doc *Document) StandardFont(name Name) Reference {
-	if ref, ok := doc.fonts[name]; ok {
+func (doc *Document) standardFont(fontName name) Reference {
+	if ref, ok := doc.fonts[fontName]; ok {
 		return ref
 	}
 
@@ -91,9 +91,9 @@ func (doc *Document) StandardFont(name Name) Reference {
 	ref := doc.add(standardFontDict{
 		Type:     fontType,
 		Subtype:  fontType1Subtype,
-		BaseFont: name,
+		BaseFont: fontName,
 	})
-	doc.fonts[name] = ref
+	doc.fonts[fontName] = ref
 	return ref
 }
 
@@ -134,40 +134,40 @@ func (doc *Document) Encode(w io.Writer) os.Error {
 
 // PDF object types
 const (
-	catalogType  Name = "Catalog"
-	pageNodeType Name = "Pages"
-	pageType     Name = "Page"
-	fontType     Name = "Font"
-	xobjectType  Name = "XObject"
+	catalogType  name = "Catalog"
+	pageNodeType name = "Pages"
+	pageType     name = "Page"
+	fontType     name = "Font"
+	xobjectType  name = "XObject"
 )
 
 // PDF object subtypes
 const (
-	imageSubtype Name = "Image"
+	imageSubtype name = "Image"
 
-	fontType1Subtype Name = "Type1"
+	fontType1Subtype name = "Type1"
 )
 
 type catalog struct {
-	Type  Name
+	Type  name
 	Pages Reference
 }
 
 type pageRootNode struct {
-	Type  Name
+	Type  name
 	Kids  []Reference
 	Count int
 }
 
 type pageNode struct {
-	Type   Name
+	Type   name
 	Parent Reference
 	Kids   []Reference
 	Count  int
 }
 
 type pageDict struct {
-	Type      Name
+	Type      name
 	Parent    Reference
 	Resources resources
 	MediaBox  Rectangle
@@ -196,22 +196,22 @@ func (r Rectangle) Dy() Unit {
 }
 
 type resources struct {
-	ProcSet []Name
-	Font    map[Name]interface{}
-	XObject map[Name]interface{}
+	ProcSet []name
+	Font    map[name]interface{}
+	XObject map[name]interface{}
 }
 
 // Predefined procedure sets
 const (
-	pdfProcSet    Name = "PDF"
-	textProcSet   Name = "Text"
-	imageBProcSet Name = "ImageB"
-	imageCProcSet Name = "ImageC"
-	imageIProcSet Name = "ImageI"
+	pdfProcSet    name = "PDF"
+	textProcSet   name = "Text"
+	imageBProcSet name = "ImageB"
+	imageCProcSet name = "ImageC"
+	imageIProcSet name = "ImageI"
 )
 
 type standardFontDict struct {
-	Type     Name
-	Subtype  Name
-	BaseFont Name
+	Type     name
+	Subtype  name
+	BaseFont name
 }
