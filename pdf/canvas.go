@@ -54,12 +54,12 @@ func (canvas *Canvas) Close() error {
 // Size returns the page's media box (the size of the physical medium).
 func (canvas *Canvas) Size() (width, height Unit) {
 	mbox := canvas.page.MediaBox
-	return mbox[2] - mbox[0], mbox[3] - mbox[1]
+	return mbox.Dx(), mbox.Dy()
 }
 
 // SetSize changes the page's media box (the size of the physical medium).
 func (canvas *Canvas) SetSize(width, height Unit) {
-	canvas.page.MediaBox = Rectangle{0, 0, width, height}
+	canvas.page.MediaBox = Rectangle{Point{0, 0}, Point{width, height}}
 }
 
 // CropBox returns the page's crop box.
@@ -175,28 +175,28 @@ func (canvas *Canvas) DrawText(text *Text) {
 // DrawImage paints a raster image at the given location and scaled to the
 // given dimensions.  If you want to render the same image multiple times in
 // the same document, use DrawImageReference.
-func (canvas *Canvas) DrawImage(img image.Image, x, y, w, h Unit) {
-	canvas.DrawImageReference(canvas.doc.AddImage(img), x, y, w, h)
+func (canvas *Canvas) DrawImage(img image.Image, rect Rectangle) {
+	canvas.DrawImageReference(canvas.doc.AddImage(img), rect)
 }
 
 // DrawImageReference paints the raster image referenced in the document at the
 // given location and scaled to the given dimensions.
-func (canvas *Canvas) DrawImageReference(ref Reference, x, y, w, h Unit) {
+func (canvas *Canvas) DrawImageReference(ref Reference, rect Rectangle) {
 	name := canvas.nextImageName()
 	canvas.page.Resources.XObject[name] = ref
 
 	canvas.Push()
-	canvas.Transform(float32(w), 0, 0, float32(h), float32(x), float32(y))
+	canvas.Transform(float32(rect.Dx()), 0, 0, float32(rect.Dy()), float32(rect.Min.X), float32(rect.Min.Y))
 	writeCommand(canvas.contents, "Do", name)
 	canvas.Pop()
 }
 
-// DrawLine paints a straight line from (x1, y1) to (x2, y2) using the current
-// stroke color and line width.
-func (canvas *Canvas) DrawLine(x1, y1, x2, y2 Unit) {
+// DrawLine paints a straight line from pt1 to pt2 using the current stroke
+// color and line width.
+func (canvas *Canvas) DrawLine(pt1, pt2 Point) {
 	var path Path
-	path.Move(x1, y1)
-	path.Line(x2, y2)
+	path.Move(pt1)
+	path.Line(pt2)
 	canvas.Stroke(&path)
 }
 
@@ -221,18 +221,18 @@ type Path struct {
 }
 
 // Move begins a new subpath by moving the current point to the given location.
-func (path *Path) Move(x, y Unit) {
-	writeCommand(&path.buf, "m", x, y)
+func (path *Path) Move(pt Point) {
+	writeCommand(&path.buf, "m", pt.X, pt.Y)
 }
 
 // Line appends a line segment from the current point to the given location.
-func (path *Path) Line(x, y Unit) {
-	writeCommand(&path.buf, "l", x, y)
+func (path *Path) Line(pt Point) {
+	writeCommand(&path.buf, "l", pt.X, pt.Y)
 }
 
 // Curve appends a cubic Bezier curve to the path.
-func (path *Path) Curve(x1, y1, x2, y2, x3, y3 Unit) {
-	writeCommand(&path.buf, "c", x1, y1, x2, y2, x3, y3)
+func (path *Path) Curve(pt1, pt2, pt3 Point) {
+	writeCommand(&path.buf, "c", pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y)
 }
 
 // Close appends a line segment from the current point to the starting point of
