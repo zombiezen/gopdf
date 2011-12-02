@@ -8,24 +8,24 @@ import (
 )
 
 const (
-	streamNoFilter    Name = ""
-	streamLZWDecode   Name = "LZWDecode"
-	streamFlateDecode Name = "FlateDecode"
+	streamNoFilter    name = ""
+	streamLZWDecode   name = "LZWDecode"
+	streamFlateDecode name = "FlateDecode"
 )
 
 // stream is a blob of data stored in a PDF file.
 type stream struct {
 	bytes.Buffer
 	writer io.Writer
-	filter Name
+	filter name
 }
 
 type streamInfo struct {
 	Length int
-	Filter Name `pdf:",omitempty"`
+	Filter name `pdf:",omitempty"`
 }
 
-func newStream(filter Name) *stream {
+func newStream(filter name) *stream {
 	st := new(stream)
 	st.filter = filter
 	switch filter {

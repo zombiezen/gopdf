@@ -164,7 +164,7 @@ func (canvas *Canvas) Transform(a, b, c, d, e, f float32) {
 func (canvas *Canvas) DrawText(text *Text) {
 	for fontName := range text.fonts {
 		if _, ok := canvas.page.Resources.Font[fontName]; !ok {
-			canvas.page.Resources.Font[fontName] = canvas.doc.StandardFont(fontName)
+			canvas.page.Resources.Font[fontName] = canvas.doc.standardFont(fontName)
 		}
 	}
 	writeCommand(canvas.contents, "BT")
@@ -202,16 +202,16 @@ func (canvas *Canvas) DrawLine(pt1, pt2 Point) {
 
 const anonymousImageFormat = "__image%d__"
 
-func (canvas *Canvas) nextImageName() Name {
-	var name Name
+func (canvas *Canvas) nextImageName() name {
+	var n name
 	for {
-		name = Name(fmt.Sprintf(anonymousImageFormat, canvas.imageCounter))
+		n = name(fmt.Sprintf(anonymousImageFormat, canvas.imageCounter))
 		canvas.imageCounter++
-		if _, ok := canvas.page.Resources.XObject[name]; !ok {
+		if _, ok := canvas.page.Resources.XObject[n]; !ok {
 			break
 		}
 	}
-	return name
+	return n
 }
 
 // Path is a shape that can be painted on a canvas.  The zero value is an empty

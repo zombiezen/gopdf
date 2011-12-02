@@ -7,14 +7,14 @@ import (
 	"strconv"
 )
 
-// Name is a PDF name object, which is used as an identifier.
-type Name string
+// name is a PDF name object, which is used as an identifier.
+type name string
 
-func (n Name) String() string {
+func (n name) String() string {
 	return string(n)
 }
 
-func (n Name) marshalPDF() ([]byte, error) {
+func (n name) marshalPDF() ([]byte, error) {
 	// TODO: escape characters
 	return []byte("/" + n), nil
 }

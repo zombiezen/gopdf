@@ -102,14 +102,14 @@ func (state *marshalState) marshalSlice(v reflect.Value) error {
 }
 
 func (state *marshalState) marshalDictionary(v reflect.Value) error {
-	if v.Type().Key() != reflect.TypeOf(Name("")) {
+	if v.Type().Key() != reflect.TypeOf(name("")) {
 		return errors.New("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
 	}
 
 	state.WriteString("<< ")
 	for _, k := range v.MapKeys() {
 		// Marshal key
-		mk, err := k.Interface().(Name).marshalPDF()
+		mk, err := k.Interface().(name).marshalPDF()
 		if err != nil {
 			return err
 		}
@@ -155,7 +155,7 @@ func (state *marshalState) marshalStruct(v reflect.Value) error {
 		}
 
 		// Marshal key
-		mk, err := Name(tag).marshalPDF()
+		mk, err := name(tag).marshalPDF()
 		if err != nil {
 			return err
 		}

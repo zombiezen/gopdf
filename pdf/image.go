@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	deviceRGBColorSpace Name = "DeviceRGB"
+	deviceRGBColorSpace name = "DeviceRGB"
 )
 
 type imageStream struct {
@@ -17,21 +17,21 @@ type imageStream struct {
 	Width            int
 	Height           int
 	BitsPerComponent int
-	ColorSpace       Name
+	ColorSpace       name
 }
 
 type imageStreamInfo struct {
-	Type             Name
-	Subtype          Name
+	Type             name
+	Subtype          name
 	Length           int
-	Filter           Name `pdf:",omitempty"`
+	Filter           name `pdf:",omitempty"`
 	Width            int
 	Height           int
 	BitsPerComponent int
-	ColorSpace       Name
+	ColorSpace       name
 }
 
-func newImageStream(filter Name, w, h int) *imageStream {
+func newImageStream(filter name, w, h int) *imageStream {
 	return &imageStream{
 		stream:           newStream(filter),
 		Width:            w,
