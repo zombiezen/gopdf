@@ -57,16 +57,18 @@ func (st *imageStream) marshalPDF(dst []byte) ([]byte, os.Error) {
 
 // encodeImageStream writes RGB data from an image in PDF format.
 func encodeImageStream(w io.Writer, img image.Image) os.Error {
-	// TODO: alpha
-
 	bd := img.Bounds()
 	var buf [3]byte
 	for y := bd.Min.Y; y < bd.Max.Y; y++ {
 		for x := bd.Min.X; x < bd.Max.X; x++ {
-			r, g, b, _ := img.At(x, y).RGBA()
-			buf[0] = byte(r & 0xff)
-			buf[1] = byte(g & 0xff)
-			buf[2] = byte(b & 0xff)
+			r, g, b, a := img.At(x, y).RGBA()
+			if a != 0 {
+				buf[0] = byte((r * 255 / a) >> 8)
+				buf[1] = byte((g * 255 / a) >> 8)
+				buf[2] = byte((b * 255 / a) >> 8)
+			} else {
+				buf[0], buf[1], buf[2] = 0, 0, 0
+			}
 			if _, err := w.Write(buf[:]); err != nil {
 				return err
 			}
@@ -76,8 +78,27 @@ func encodeImageStream(w io.Writer, img image.Image) os.Error {
 }
 
 func encodeRGBAStream(w io.Writer, img *image.RGBA) os.Error {
+	var rgb [3]uint8
+	var a uint16
 	for i := 0; i < len(img.Pix); i += 4 {
-		if _, err := w.Write(img.Pix[:3]); err != nil {
+		a = uint16(img.Pix[i+3])
+		if a != 0 {
+			rgb[0] = uint8(uint16(img.Pix[i]) * 255 / a)
+			rgb[1] = uint8(uint16(img.Pix[i+1]) * 255 / a)
+			rgb[2] = uint8(uint16(img.Pix[i+2]) * 255 / a)
+		} else {
+			rgb[0], rgb[1], rgb[2] = 0, 0, 0
+		}
+		if _, err := w.Write(rgb[:]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func encodeNRGBAStream(w io.Writer, img *image.NRGBA) os.Error {
+	for i := 0; i < len(img.Pix); i += 4 {
+		if _, err := w.Write(img.Pix[i : i+3]); err != nil {
 			return err
 		}
 	}
