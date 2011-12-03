@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/bmp"
 	"image/jpeg"
+	"image/png"
 	"image/ycbcr"
 	"io/ioutil"
 	"os"
@@ -24,6 +25,20 @@ func loadSuzanneRGBA() (*image.RGBA, error) {
 		return nil, err
 	}
 	return img.(*image.RGBA), nil
+}
+
+func loadSuzanneNRGBA() (*image.NRGBA, error) {
+	f, err := os.Open("testdata/suzanne.png")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	img, err := png.Decode(f)
+	if err != nil {
+		return nil, err
+	}
+	return img.(*image.NRGBA), nil
 }
 
 func loadSuzanneYCbCr() (*ycbcr.YCbCr, error) {
@@ -59,6 +74,28 @@ func BenchmarkEncodeRGBA(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		encodeRGBAStream(ioutil.Discard, img)
+	}
+}
+
+func BenchmarkEncodeNRGBAGeneric(b *testing.B) {
+	b.StopTimer()
+	img, _ := loadSuzanneNRGBA()
+	b.SetBytes(suzanneBytes)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		encodeImageStream(ioutil.Discard, img)
+	}
+}
+
+func BenchmarkEncodeNRGBA(b *testing.B) {
+	b.StopTimer()
+	img, _ := loadSuzanneNRGBA()
+	b.SetBytes(suzanneBytes)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		encodeNRGBAStream(ioutil.Discard, img)
 	}
 }
 
