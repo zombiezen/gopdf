@@ -108,6 +108,8 @@ func (doc *Document) AddImage(img image.Image) Reference {
 	switch i := img.(type) {
 	case *image.RGBA:
 		encodeRGBAStream(st, i)
+	case *image.NRGBA:
+		encodeNRGBAStream(st, i)
 	case *ycbcr.YCbCr:
 		encodeYCbCrStream(st, i)
 	default:
