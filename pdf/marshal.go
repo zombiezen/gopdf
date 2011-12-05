@@ -3,7 +3,7 @@
 package pdf
 
 import (
-	"os"
+	"errors"
 	"reflect"
 	"strconv"
 	"strings"
@@ -11,7 +11,7 @@ import (
 
 // A marshaler can produce a PDF object.
 type marshaler interface {
-	marshalPDF(dst []byte) ([]byte, os.Error)
+	marshalPDF(dst []byte) ([]byte, error)
 }
 
 // marshal returns the PDF encoding of v.
@@ -19,7 +19,7 @@ type marshaler interface {
 // If the value implements the marshaler interface, then its marshalPDF method
 // is called.  ints, strings, and floats will be marshalled according to the PDF
 // standard.
-func marshal(dst []byte, v interface{}) ([]byte, os.Error) {
+func marshal(dst []byte, v interface{}) ([]byte, error) {
 	state := marshalState{dst}
 	if err := state.marshalValue(reflect.ValueOf(v)); err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (state *marshalState) writeString(s string) {
 	state.data = append(state.data, s...)
 }
 
-func (state *marshalState) marshalValue(v reflect.Value) os.Error {
+func (state *marshalState) marshalValue(v reflect.Value) error {
 	if !v.IsValid() {
 		state.writeString("null")
 		return nil
@@ -75,7 +75,7 @@ func (state *marshalState) marshalValue(v reflect.Value) os.Error {
 		return state.marshalStruct(v)
 	}
 
-	return os.NewError("pdf: unsupported type: " + v.Type().String())
+	return errors.New("pdf: unsupported type: " + v.Type().String())
 }
 
 // quote escapes a string and returns a PDF string literal.
@@ -92,7 +92,7 @@ func quote(s string) string {
 	return "(" + r.Replace(s) + ")"
 }
 
-func (state *marshalState) marshalSlice(v reflect.Value) os.Error {
+func (state *marshalState) marshalSlice(v reflect.Value) error {
 	state.writeString("[ ")
 	for i := 0; i < v.Len(); i++ {
 		if err := state.marshalValue(v.Index(i)); err != nil {
@@ -104,9 +104,9 @@ func (state *marshalState) marshalSlice(v reflect.Value) os.Error {
 	return nil
 }
 
-func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
+func (state *marshalState) marshalDictionary(v reflect.Value) error {
 	if v.Type().Key() != reflect.TypeOf(name("")) {
-		return os.NewError("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
+		return errors.New("pdf: cannot marshal dictionary with key type: " + v.Type().Key().String())
 	}
 
 	state.writeString("<< ")
@@ -117,7 +117,7 @@ func (state *marshalState) marshalDictionary(v reflect.Value) os.Error {
 	return nil
 }
 
-func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
+func (state *marshalState) marshalStruct(v reflect.Value) error {
 	state.writeString("<< ")
 	t := v.Type()
 	n := v.NumField()
@@ -151,7 +151,7 @@ func (state *marshalState) marshalStruct(v reflect.Value) os.Error {
 	return nil
 }
 
-func (state *marshalState) marshalKeyValue(k name, v reflect.Value) os.Error {
+func (state *marshalState) marshalKeyValue(k name, v reflect.Value) error {
 	slice, err := k.marshalPDF(state.data)
 	if err != nil {
 		return err

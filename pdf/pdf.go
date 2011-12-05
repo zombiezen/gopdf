@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/ycbcr"
 	"io"
-	"os"
 	"strconv"
 )
 
@@ -119,7 +118,7 @@ func (doc *Document) AddImage(img image.Image) Reference {
 }
 
 // Encode writes the document to a writer in the PDF format.
-func (doc *Document) Encode(w io.Writer) os.Error {
+func (doc *Document) Encode(w io.Writer) error {
 	pageRoot := &pageRootNode{
 		Type:  pageNodeType,
 		Count: len(doc.pages),

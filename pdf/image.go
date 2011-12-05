@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/ycbcr"
 	"io"
-	"os"
 )
 
 const (
@@ -42,7 +41,7 @@ func newImageStream(filter name, w, h int) *imageStream {
 	}
 }
 
-func (st *imageStream) marshalPDF(dst []byte) ([]byte, os.Error) {
+func (st *imageStream) marshalPDF(dst []byte) ([]byte, error) {
 	return marshalStream(dst, imageStreamInfo{
 		Type:             xobjectType,
 		Subtype:          imageSubtype,
@@ -56,7 +55,7 @@ func (st *imageStream) marshalPDF(dst []byte) ([]byte, os.Error) {
 }
 
 // encodeImageStream writes RGB data from an image in PDF format.
-func encodeImageStream(w io.Writer, img image.Image) os.Error {
+func encodeImageStream(w io.Writer, img image.Image) error {
 	bd := img.Bounds()
 	var buf [3]byte
 	for y := bd.Min.Y; y < bd.Max.Y; y++ {
@@ -77,7 +76,7 @@ func encodeImageStream(w io.Writer, img image.Image) os.Error {
 	return nil
 }
 
-func encodeRGBAStream(w io.Writer, img *image.RGBA) os.Error {
+func encodeRGBAStream(w io.Writer, img *image.RGBA) error {
 	var rgb [3]uint8
 	var a uint16
 	for i := 0; i < len(img.Pix); i += 4 {
@@ -96,7 +95,7 @@ func encodeRGBAStream(w io.Writer, img *image.RGBA) os.Error {
 	return nil
 }
 
-func encodeNRGBAStream(w io.Writer, img *image.NRGBA) os.Error {
+func encodeNRGBAStream(w io.Writer, img *image.NRGBA) error {
 	for i := 0; i < len(img.Pix); i += 4 {
 		if _, err := w.Write(img.Pix[i : i+3]); err != nil {
 			return err
@@ -105,7 +104,7 @@ func encodeNRGBAStream(w io.Writer, img *image.NRGBA) os.Error {
 	return nil
 }
 
-func encodeYCbCrStream(w io.Writer, img *ycbcr.YCbCr) os.Error {
+func encodeYCbCrStream(w io.Writer, img *ycbcr.YCbCr) error {
 	var buf [3]byte
 	var yy, cb, cr byte
 	var i, j int
