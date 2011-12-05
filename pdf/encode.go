@@ -85,7 +85,7 @@ func (enc *encoder) writeBody(w *offsetWriter) ([]int64, os.Error) {
 		if err != nil {
 			return nil, err
 		}
-		if _, err = w.Write(append(data, []byte(newline)...)); err != nil {
+		if _, err = w.Write(append(data, newline...)); err != nil {
 			return nil, err
 		}
 	}
@@ -117,11 +117,11 @@ func (enc *encoder) writeTrailer(w *offsetWriter) os.Error {
 		Root: enc.root,
 	}
 	data := make([]byte, 0, len(trailerHeader)+len(newline))
-	data = append(data, []byte(trailerHeader)...)
+	data = append(data, trailerHeader...)
 	if data, err = marshal(data, dict); err != nil {
 		return err
 	}
-	data = append(data, []byte(newline)...)
+	data = append(data, newline...)
 
 	_, err = w.Write(data)
 	return err

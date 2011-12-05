@@ -85,8 +85,8 @@ func marshalStream(dst []byte, obj interface{}, data []byte) ([]byte, os.Error) 
 	if dst, err = marshal(dst, obj); err != nil {
 		return nil, err
 	}
-	dst = append(dst, []byte(streamBegin)...)
+	dst = append(dst, streamBegin...)
 	dst = append(dst, data...)
-	dst = append(dst, []byte(streamEnd)...)
+	dst = append(dst, streamEnd...)
 	return dst, nil
 }

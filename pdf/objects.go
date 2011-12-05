@@ -34,14 +34,14 @@ const (
 func (obj indirectObject) marshalPDF(dst []byte) ([]byte, os.Error) {
 	var err os.Error
 	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
-	dst = append(dst, []byte(mn)...)
+	dst = append(dst, mn...)
 	dst = append(dst, ' ')
-	dst = append(dst, []byte(mg)...)
-	dst = append(dst, []byte(objectBegin)...)
+	dst = append(dst, mg...)
+	dst = append(dst, objectBegin...)
 	if dst, err = marshal(dst, obj.Object); err != nil {
 		return nil, err
 	}
-	dst = append(dst, []byte(objectEnd)...)
+	dst = append(dst, objectEnd...)
 	return dst, nil
 }
 
@@ -52,5 +52,5 @@ type Reference struct {
 }
 
 func (ref Reference) marshalPDF(dst []byte) ([]byte, os.Error) {
-	return append(dst, []byte(fmt.Sprintf("%d %d R", ref.Number, ref.Generation))...), nil
+	return append(dst, fmt.Sprintf("%d %d R", ref.Number, ref.Generation)...), nil
 }
