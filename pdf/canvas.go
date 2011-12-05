@@ -237,6 +237,11 @@ func (path *Path) Curve(pt1, pt2, pt3 Point) {
 	writeCommand(&path.buf, "c", pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y)
 }
 
+// Rectangle appends a complete rectangle to the path.
+func (path *Path) Rectangle(rect Rectangle) {
+	writeCommand(&path.buf, "re", rect.Min.X, rect.Min.Y, rect.Dx(), rect.Dy())
+}
+
 // Close appends a line segment from the current point to the starting point of
 // the subpath.
 func (path *Path) Close() {
