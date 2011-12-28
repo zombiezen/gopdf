@@ -32,7 +32,7 @@ const (
 
 func (obj indirectObject) marshalPDF(dst []byte) ([]byte, error) {
 	var err error
-	mn, mg := strconv.Uitoa(obj.Number), strconv.Uitoa(obj.Generation)
+	mn, mg := strconv.FormatUint(uint64(obj.Number), 10), strconv.FormatUint(uint64(obj.Generation), 10)
 	dst = append(dst, mn...)
 	dst = append(dst, ' ')
 	dst = append(dst, mg...)

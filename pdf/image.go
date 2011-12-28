@@ -4,7 +4,7 @@ package pdf
 
 import (
 	"image"
-	"image/ycbcr"
+	"image/color"
 	"io"
 )
 
@@ -83,7 +83,7 @@ func encodeRGBAStream(w io.Writer, img *image.RGBA) error {
 	return nil
 }
 
-func encodeYCbCrStream(w io.Writer, img *ycbcr.YCbCr) error {
+func encodeYCbCrStream(w io.Writer, img *image.YCbCr) error {
 	var buf [3]byte
 	var yy, cb, cr byte
 	var i, j int
@@ -92,17 +92,17 @@ func encodeYCbCrStream(w io.Writer, img *ycbcr.YCbCr) error {
 		for x := 0; x < dx; x++ {
 			i, j = x, y
 			switch img.SubsampleRatio {
-			case ycbcr.SubsampleRatio420:
+			case image.YCbCrSubsampleRatio420:
 				j /= 2
 				fallthrough
-			case ycbcr.SubsampleRatio422:
+			case image.YCbCrSubsampleRatio422:
 				i /= 2
 			}
 			yy = img.Y[y*img.YStride+x]
 			cb = img.Cb[j*img.CStride+i]
 			cr = img.Cr[j*img.CStride+i]
 
-			buf[0], buf[1], buf[2] = ycbcr.YCbCrToRGB(yy, cb, cr)
+			buf[0], buf[1], buf[2] = color.YCbCrToRGB(yy, cb, cr)
 			if _, err := w.Write(buf[:]); err != nil {
 				return err
 			}

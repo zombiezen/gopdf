@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/bmp"
 	"image/jpeg"
-	"image/ycbcr"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -26,7 +25,7 @@ func loadSuzanneRGBA() (*image.RGBA, error) {
 	return img.(*image.RGBA), nil
 }
 
-func loadSuzanneYCbCr() (*ycbcr.YCbCr, error) {
+func loadSuzanneYCbCr() (*image.YCbCr, error) {
 	f, err := os.Open("testdata/suzanne.jpg")
 	if err != nil {
 		return nil, err
@@ -37,7 +36,7 @@ func loadSuzanneYCbCr() (*ycbcr.YCbCr, error) {
 	if err != nil {
 		return nil, err
 	}
-	return img.(*ycbcr.YCbCr), nil
+	return img.(*image.YCbCr), nil
 }
 
 func BenchmarkEncodeRGBAGeneric(b *testing.B) {

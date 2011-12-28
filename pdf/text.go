@@ -129,7 +129,8 @@ func getFontWidths(fontName name) []uint16 {
 
 func computeStringWidth(s string, widths []uint16, fontSize Unit) Unit {
 	width := Unit(0)
-	for _, r := range s {
+	for _, c := range s {
+		r := int(c)
 		if r < len(widths) {
 			width += Unit(widths[r])
 		}
