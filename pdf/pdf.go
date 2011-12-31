@@ -4,7 +4,6 @@ package pdf
 
 import (
 	"image"
-	"image/ycbcr"
 	"io"
 	"strconv"
 )
@@ -14,7 +13,7 @@ import (
 type Unit float32
 
 func (unit Unit) String() string {
-	return strconv.Ftoa32(float32(unit), 'f', marshalFloatPrec)
+	return strconv.FormatFloat(float64(unit), 'f', marshalFloatPrec, 32)
 }
 
 // Common unit scales
@@ -109,7 +108,7 @@ func (doc *Document) AddImage(img image.Image) Reference {
 		encodeRGBAStream(st, i)
 	case *image.NRGBA:
 		encodeNRGBAStream(st, i)
-	case *ycbcr.YCbCr:
+	case *image.YCbCr:
 		encodeYCbCrStream(st, i)
 	default:
 		encodeImageStream(st, i)

@@ -54,13 +54,13 @@ func (state *marshalState) marshalValue(v reflect.Value) error {
 
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		state.writeString(strconv.Itoa64(v.Int()))
+		state.writeString(strconv.FormatInt(v.Int(), 10))
 		return nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		state.writeString(strconv.Uitoa64(v.Uint()))
+		state.writeString(strconv.FormatUint(v.Uint(), 10))
 		return nil
 	case reflect.Float32, reflect.Float64:
-		state.writeString(strconv.Ftoa64(v.Float(), 'f', marshalFloatPrec))
+		state.writeString(strconv.FormatFloat(v.Float(), 'f', marshalFloatPrec, 64))
 		return nil
 	case reflect.String:
 		state.writeString(quote(v.String()))
