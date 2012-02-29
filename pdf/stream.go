@@ -32,7 +32,7 @@ func newStream(filter name) *stream {
 	case streamLZWDecode:
 		st.writer = lzw.NewWriter(&st.Buffer, lzw.MSB, 8)
 	case streamFlateDecode:
-		st.writer, _ = zlib.NewWriter(&st.Buffer)
+		st.writer = zlib.NewWriter(&st.Buffer)
 	default:
 		// TODO: warn about bad filter names?
 		st.writer = &st.Buffer

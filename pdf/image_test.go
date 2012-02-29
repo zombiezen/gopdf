@@ -1,8 +1,8 @@
 package pdf
 
 import (
+	"code.google.com/p/go.image/bmp"
 	"image"
-	"image/bmp"
 	"image/jpeg"
 	"image/png"
 	"io/ioutil"
