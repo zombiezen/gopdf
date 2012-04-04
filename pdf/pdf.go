@@ -195,6 +195,19 @@ func (r Rectangle) Dy() Unit {
 	return r.Max.Y - r.Min.Y
 }
 
+func (r Rectangle) marshalPDF(dst []byte) ([]byte, error) {
+	dst = append(dst, '[', ' ')
+	dst, _ = marshal(dst, r.Min.X)
+	dst = append(dst, ' ')
+	dst, _ = marshal(dst, r.Min.Y)
+	dst = append(dst, ' ')
+	dst, _ = marshal(dst, r.Max.X)
+	dst = append(dst, ' ')
+	dst, _ = marshal(dst, r.Max.Y)
+	dst = append(dst, ' ', ']')
+	return dst, nil
+}
+
 type resources struct {
 	ProcSet []name
 	Font    map[name]interface{}

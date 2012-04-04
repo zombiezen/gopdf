@@ -57,6 +57,10 @@ var marshalTests = []marshalTest{
 		},
 		`<< /Size 42 /Params << /this (that) >> /Pi 3.14159 >>`,
 	},
+	{
+		Rectangle{Point{1, 2}, Point{3, 4}},
+		`[ 1.00000 2.00000 3.00000 4.00000 ]`,
+	},
 }
 
 func TestMarshal(t *testing.T) {
