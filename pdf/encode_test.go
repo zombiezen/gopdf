@@ -10,17 +10,21 @@ import (
 
 const encodingTestData = "%PDF-1.7\r\n" +
 	"%\x93\x8c\x8b\x9e\r\n" +
-	"1 0 obj (Hello, World!) endobj\r\n" +
-	"2 0 obj 42 endobj\r\n" +
+	"1 0 obj\r\n" +
+	"(Hello, World!)\r\n" +
+	"endobj\r\n" +
+	"2 0 obj\r\n" +
+	"42\r\n" +
+	"endobj\r\n" +
 	"xref\r\n" +
 	"0 3\r\n" +
 	"0000000000 65535 f\r\n" +
 	"0000000017 00000 n\r\n" +
-	"0000000049 00000 n\r\n" +
+	"0000000051 00000 n\r\n" +
 	"trailer\r\n" +
 	"<< /Size 3 /Root 0 0 R >>\r\n" +
 	"startxref\r\n" +
-	"68\r\n" +
+	"72\r\n" +
 	"%%EOF\r\n"
 
 func TestEncoder(t *testing.T) {

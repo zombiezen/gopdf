@@ -26,8 +26,8 @@ type indirectObject struct {
 }
 
 const (
-	objectBegin = " obj "
-	objectEnd   = " endobj"
+	objectBegin = " obj\r\n"
+	objectEnd   = "\r\nendobj"
 )
 
 func (obj indirectObject) marshalPDF(dst []byte) ([]byte, error) {
