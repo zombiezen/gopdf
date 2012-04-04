@@ -62,9 +62,9 @@ func encodeImageStream(w io.Writer, img image.Image) error {
 		for x := bd.Min.X; x < bd.Max.X; x++ {
 			r, g, b, a := img.At(x, y).RGBA()
 			if a != 0 {
-				buf[0] = byte((r * 255 / a) >> 8)
-				buf[1] = byte((g * 255 / a) >> 8)
-				buf[2] = byte((b * 255 / a) >> 8)
+				buf[0] = byte((r * 65535 / a) >> 8)
+				buf[1] = byte((g * 65535 / a) >> 8)
+				buf[2] = byte((b * 65535 / a) >> 8)
 			} else {
 				buf[0], buf[1], buf[2] = 0, 0, 0
 			}
@@ -82,9 +82,9 @@ func encodeRGBAStream(w io.Writer, img *image.RGBA) error {
 	for i := 0; i < len(img.Pix); i += 4 {
 		a = uint16(img.Pix[i+3])
 		if a != 0 {
-			rgb[0] = uint8(uint16(img.Pix[i]) * 255 / a)
-			rgb[1] = uint8(uint16(img.Pix[i+1]) * 255 / a)
-			rgb[2] = uint8(uint16(img.Pix[i+2]) * 255 / a)
+			rgb[0] = uint8(uint16(img.Pix[i]) * 65535 / a)
+			rgb[1] = uint8(uint16(img.Pix[i+1]) * 65535 / a)
+			rgb[2] = uint8(uint16(img.Pix[i+2]) * 65535 / a)
 		} else {
 			rgb[0], rgb[1], rgb[2] = 0, 0, 0
 		}
