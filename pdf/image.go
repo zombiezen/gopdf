@@ -77,14 +77,14 @@ func encodeImageStream(w io.Writer, img image.Image) error {
 }
 
 func encodeRGBAStream(w io.Writer, img *image.RGBA) error {
-	var rgb [3]uint8
+	var rgb [3]byte
 	var a uint16
 	for i := 0; i < len(img.Pix); i += 4 {
 		a = uint16(img.Pix[i+3])
 		if a != 0 {
-			rgb[0] = uint8(uint16(img.Pix[i]) * 65535 / a)
-			rgb[1] = uint8(uint16(img.Pix[i+1]) * 65535 / a)
-			rgb[2] = uint8(uint16(img.Pix[i+2]) * 65535 / a)
+			rgb[0] = byte(uint16(img.Pix[i]) * 0xff / a)
+			rgb[1] = byte(uint16(img.Pix[i+1]) * 0xff / a)
+			rgb[2] = byte(uint16(img.Pix[i+2]) * 0xff / a)
 		} else {
 			rgb[0], rgb[1], rgb[2] = 0, 0, 0
 		}
