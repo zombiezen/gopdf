@@ -1,6 +1,7 @@
 package pdf
 
 import (
+	"bytes"
 	"code.google.com/p/go.image/bmp"
 	"image"
 	"image/jpeg"
@@ -117,5 +118,83 @@ func BenchmarkEncodeYCbCr(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		encodeYCbCrStream(ioutil.Discard, img)
+	}
+}
+
+func TestEncodeRGBA(t *testing.T) {
+	img, _ := loadSuzanneRGBA()
+	st := newImageStream(streamFlateDecode, img.Bounds().Dx(), img.Bounds().Dy())
+	encodeRGBAStream(st, img)
+	st.Close()
+	buf := []byte{}
+	buf, _ = marshal(buf, st)
+	content, _ := ioutil.ReadFile("testdata/suzanne.bmp.pdf")
+	if bytes.Index(content, buf) < 0 {
+		t.Error("Unable to find image object from pdf file")
+	}
+}
+
+func TestEncodeRGBAGeneric(t *testing.T) {
+	img, _ := loadSuzanneRGBA()
+	st := newImageStream(streamFlateDecode, img.Bounds().Dx(), img.Bounds().Dy())
+	encodeImageStream(st, img)
+	st.Close()
+	buf := []byte{}
+	buf, _ = marshal(buf, st)
+	content, _ := ioutil.ReadFile("testdata/suzanne.bmp.pdf")
+	if bytes.Index(content, buf) < 0 {
+		t.Error("Unable to find image object from pdf file")
+	}
+}
+
+func TestEncodeNRGBA(t *testing.T) {
+	img, _ := loadSuzanneNRGBA()
+	st := newImageStream(streamFlateDecode, img.Bounds().Dx(), img.Bounds().Dy())
+	encodeNRGBAStream(st, img)
+	st.Close()
+	buf := []byte{}
+	buf, _ = marshal(buf, st)
+	content, _ := ioutil.ReadFile("testdata/suzanne.png.pdf")
+	if bytes.Index(content, buf) < 0 {
+		t.Error("Unable to find image object from pdf file")
+	}
+}
+
+func TestEncodeNRGBAGeneric(t *testing.T) {
+	img, _ := loadSuzanneNRGBA()
+	st := newImageStream(streamFlateDecode, img.Bounds().Dx(), img.Bounds().Dy())
+	encodeImageStream(st, img)
+	st.Close()
+	buf := []byte{}
+	buf, _ = marshal(buf, st)
+	content, _ := ioutil.ReadFile("testdata/suzanne.png.pdf")
+	if bytes.Index(content, buf) < 0 {
+		t.Error("Unable to find image object from pdf file")
+	}
+}
+
+func TestEncodeYCbCr(t *testing.T) {
+	img, _ := loadSuzanneYCbCr()
+	st := newImageStream(streamFlateDecode, img.Bounds().Dx(), img.Bounds().Dy())
+	encodeYCbCrStream(st, img)
+	st.Close()
+	buf := []byte{}
+	buf, _ = marshal(buf, st)
+	content, _ := ioutil.ReadFile("testdata/suzanne.jpg.pdf")
+	if bytes.Index(content, buf) < 0 {
+		t.Error("Unable to find image object from pdf file")
+	}
+}
+
+func TestEncodeYCbCrGeneric(t *testing.T) {
+	img, _ := loadSuzanneYCbCr()
+	st := newImageStream(streamFlateDecode, img.Bounds().Dx(), img.Bounds().Dy())
+	encodeImageStream(st, img)
+	st.Close()
+	buf := []byte{}
+	buf, _ = marshal(buf, st)
+	content, _ := ioutil.ReadFile("testdata/suzanne.jpg.pdf")
+	if bytes.Index(content, buf) < 0 {
+		t.Error("Unable to find image object from pdf file")
 	}
 }
