@@ -2,7 +2,6 @@ package pdf
 
 import (
 	"bytes"
-	"code.google.com/p/go.image/bmp"
 	"image"
 	"image/color"
 	"image/draw"
@@ -11,6 +10,8 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"golang.org/x/image/bmp"
 )
 
 const suzanneBytes = 512 * 512 * 3
