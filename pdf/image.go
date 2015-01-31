@@ -57,58 +57,55 @@ func (st *imageStream) marshalPDF(dst []byte) ([]byte, error) {
 // encodeImageStream writes RGB data from an image in PDF format.
 func encodeImageStream(w io.Writer, img image.Image) error {
 	bd := img.Bounds()
-	var buf [3]uint8
+	buf := make([]byte, bd.Dx()*bd.Dy()*3)
+	i := 0
 	for y := bd.Min.Y; y < bd.Max.Y; y++ {
 		for x := bd.Min.X; x < bd.Max.X; x++ {
 			r, g, b, a := img.At(x, y).RGBA()
 			if a != 0 {
-				buf[0] = uint8((r * 65535 / a) >> 8)
-				buf[1] = uint8((g * 65535 / a) >> 8)
-				buf[2] = uint8((b * 65535 / a) >> 8)
-			} else {
-				buf[0], buf[1], buf[2] = 0, 0, 0
+				buf[i+0] = uint8((r * 65535 / a) >> 8)
+				buf[i+1] = uint8((g * 65535 / a) >> 8)
+				buf[i+2] = uint8((b * 65535 / a) >> 8)
 			}
-			if _, err := w.Write(buf[:]); err != nil {
-				return err
-			}
+			i += 3
 		}
 	}
-	return nil
+	_, err := w.Write(buf)
+	return err
 }
 
 func encodeRGBAStream(w io.Writer, img *image.RGBA) error {
-	var rgb [3]uint8
+	buf := make([]byte, 3*img.Rect.Dx()*img.Rect.Dy())
 	var a uint16
-	for i := 0; i < len(img.Pix); i += 4 {
+	for i, j := 0, 0; i < len(img.Pix); i, j = i+4, j+3 {
 		a = uint16(img.Pix[i+3])
 		if a != 0 {
-			rgb[0] = uint8(uint16(img.Pix[i]) * 0xff / a)
-			rgb[1] = uint8(uint16(img.Pix[i+1]) * 0xff / a)
-			rgb[2] = uint8(uint16(img.Pix[i+2]) * 0xff / a)
-		} else {
-			rgb[0], rgb[1], rgb[2] = 0, 0, 0
-		}
-		if _, err := w.Write(rgb[:]); err != nil {
-			return err
+			buf[j+0] = byte(uint16(img.Pix[i+0]) * 0xff / a)
+			buf[j+1] = byte(uint16(img.Pix[i+1]) * 0xff / a)
+			buf[j+2] = byte(uint16(img.Pix[i+2]) * 0xff / a)
 		}
 	}
-	return nil
+	_, err := w.Write(buf)
+	return err
 }
 
 func encodeNRGBAStream(w io.Writer, img *image.NRGBA) error {
-	for i := 0; i < len(img.Pix); i += 4 {
-		if _, err := w.Write(img.Pix[i : i+3]); err != nil {
-			return err
-		}
+	buf := make([]byte, 3*img.Rect.Dx()*img.Rect.Dy())
+	for i, j := 0, 0; i < len(img.Pix); i, j = i+4, j+3 {
+		buf[j+0] = img.Pix[i+0]
+		buf[j+1] = img.Pix[i+1]
+		buf[j+2] = img.Pix[i+2]
 	}
-	return nil
+	_, err := w.Write(buf)
+	return err
 }
 
 func encodeYCbCrStream(w io.Writer, img *image.YCbCr) error {
-	var buf [3]uint8
 	var yy, cb, cr uint8
 	var i, j int
 	dx, dy := img.Rect.Dx(), img.Rect.Dy()
+	buf := make([]byte, 3*dx*dy)
+	bi := 0
 	for y := 0; y < dy; y++ {
 		for x := 0; x < dx; x++ {
 			i, j = x, y
@@ -123,11 +120,10 @@ func encodeYCbCrStream(w io.Writer, img *image.YCbCr) error {
 			cb = img.Cb[j*img.CStride+i]
 			cr = img.Cr[j*img.CStride+i]
 
-			buf[0], buf[1], buf[2] = color.YCbCrToRGB(yy, cb, cr)
-			if _, err := w.Write(buf[:]); err != nil {
-				return err
-			}
+			buf[bi+0], buf[bi+1], buf[bi+2] = color.YCbCrToRGB(yy, cb, cr)
+			bi += 3
 		}
 	}
-	return nil
+	_, err := w.Write(buf)
+	return err
 }
